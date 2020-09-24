@@ -174,7 +174,208 @@ time.sleep(1)
 
 # Create input to ask for HUB/Node
 print("###########################################################")
-Short_HUB_Input = input("Type the HUB & Node you would like to create a maintenance ticket for\nThis should be entered as a 2/3 letter HUB -Space- Node.\nFor example \"MAU 1\"\n###########################################################\n") 
+#Short_HUB_Input = input("Type the HUB & Node you would like to create a maintenance ticket for\nThis should be entered as a 2/3 letter HUB -Space- Node.\nFor example \"MAU 1\"\n###########################################################\n") 
+Mac_Domain = input("Type the Mac Domain for the node you would like to investigate.\nFor example \"7:0/0\"\n###########################################################\n") 
+
+###########################################################
+
+# Convert HUB/Node to MD
+# https://kb.ss-cae.net/pages/viewpage.action?pageId=33096083#tab-Alexis
+if Mac_Domain == "7:0/0":
+	Short_HUB_Input = "ALX 1P1"
+elif Mac_Domain == "7:0/1":
+	Short_HUB_Input = "ALX 1P4"
+elif Mac_Domain == "7:0/2":
+	Short_HUB_Input = "ALX 2"
+elif Mac_Domain == "7:0/3":
+	Short_HUB_Input = "ALX 3P1"
+elif Mac_Domain == "7:0/4":
+	Short_HUB_Input = "ALX 3P4"
+elif Mac_Domain == "7:0/5":
+	Short_HUB_Input = "ALX 4"
+elif Mac_Domain == "7:0/6":
+	Short_HUB_Input = "ALX 5P1"
+elif Mac_Domain == "7:0/7":
+	Short_HUB_Input = "ALX 6"
+elif Mac_Domain == "7:0/8":
+	Short_HUB_Input = "ALX 7"
+elif Mac_Domain == "7:0/9":
+	Short_HUB_Input = "ALX 8P1"
+elif Mac_Domain == "7:0/10":
+	Short_HUB_Input = "ALX 8P4"
+elif Mac_Domain == "7:0/11":
+	Short_HUB_Input = "ALX 9P1"
+elif Mac_Domain == "7:1/0":
+	Short_HUB_Input = "ALX 9P4"
+elif Mac_Domain == "7:1/1":
+	Short_HUB_Input = "ALX 10P1"
+elif Mac_Domain == "7:1/2":
+	Short_HUB_Input = "ALX 10P4"
+elif Mac_Domain == "7:1/3":
+	Short_HUB_Input = "ALX 11P1"
+elif Mac_Domain == "7:1/4":
+	Short_HUB_Input = "ALX 11P4"
+elif Mac_Domain == "7:1/5":
+	Short_HUB_Input = "ALX 12"
+elif Mac_Domain == "7:1/6":
+	Short_HUB_Input = "ALX 13"
+elif Mac_Domain == "7:1/7":
+	Short_HUB_Input = "ALX 14"
+elif Mac_Domain == "7:1/8":
+	Short_HUB_Input = "ALX 15P1"
+elif Mac_Domain == "7:1/9":
+	Short_HUB_Input = "ALX 15P4"
+elif Mac_Domain == "7:1/10":
+	Short_HUB_Input = "ALX 16"
+elif Mac_Domain == "7:1/11":
+	Short_HUB_Input = "ALX 17P1"
+elif Mac_Domain == "7:2/0":
+	Short_HUB_Input = "ALX 17P4"
+elif Mac_Domain == "7:2/1":
+	Short_HUB_Input = "ALX 18P1"
+elif Mac_Domain == "7:2/2":
+	Short_HUB_Input = "ALX 18P4"
+elif Mac_Domain == "7:2/3":
+	Short_HUB_Input = "ALX 19"
+elif Mac_Domain == "7:2/4":
+	Short_HUB_Input = "ALX 20"
+elif Mac_Domain == "7:2/5":
+	Short_HUB_Input = "ALX 21"
+elif Mac_Domain == "7:2/6":
+	Short_HUB_Input = "ALX 22"
+elif Mac_Domain == "7:2/7":
+	Short_HUB_Input = "ALX 23P1"
+elif Mac_Domain == "7:2/8":
+	Short_HUB_Input = "ALX 23P4"
+elif Mac_Domain == "7:2/9":
+	Short_HUB_Input = "ALX 24"
+elif Mac_Domain == "7:2/10":
+	Short_HUB_Input = "ALX 25P1"
+elif Mac_Domain == "7:2/11":
+	Short_HUB_Input = "ALX 25P4"
+elif Mac_Domain == "7:3/0":
+	Short_HUB_Input = "ALX 26P1"
+elif Mac_Domain == "7:3/1":
+	Short_HUB_Input = "ALX 26P4"
+elif Mac_Domain == "7:3/2":
+	Short_HUB_Input = "ALX 27P1"
+elif Mac_Domain == "7:3/3":
+	Short_HUB_Input = "ALX 27P4"
+elif Mac_Domain == "7:3/4":
+	Short_HUB_Input = "ALX 28P1"
+elif Mac_Domain == "7:3/5":
+	Short_HUB_Input = "ALX 28P4"
+elif Mac_Domain == "7:3/6":
+	Short_HUB_Input = "ALX 29"
+elif Mac_Domain == "7:3/7":
+	Short_HUB_Input = "ALX 30P1"
+elif Mac_Domain == "7:3/8":
+	Short_HUB_Input = "ALX 30P4"
+elif Mac_Domain == "7:3/9":
+	Short_HUB_Input = "ALX 31"
+elif Mac_Domain == "7:3/10":
+	Short_HUB_Input = "ALX 32"
+elif Mac_Domain == "7:3/11":
+	Short_HUB_Input = "ALX 33"
+elif Mac_Domain == "7:4/0":
+	Short_HUB_Input = "ALX 34"
+elif Mac_Domain == "7:4/1":
+	Short_HUB_Input = "ALX 35P1"
+elif Mac_Domain == "7:4/2":
+	Short_HUB_Input = "ALX 35P4"
+elif Mac_Domain == "7:4/3":
+	Short_HUB_Input = "ALX 36"
+elif Mac_Domain == "7:4/4":
+	Short_HUB_Input = "ALX 37"
+elif Mac_Domain == "7:4/5":
+	Short_HUB_Input = "ALX 38"
+elif Mac_Domain == "7:4/6":
+	Short_HUB_Input = "ALX 39"
+elif Mac_Domain == "7:4/7":
+	Short_HUB_Input = "ALX 40"
+elif Mac_Domain == "7:4/8":
+	Short_HUB_Input = "ALX 41"
+elif Mac_Domain == "7:4/9":
+	Short_HUB_Input = "ALX 42"
+elif Mac_Domain == "7:4/10":
+	Short_HUB_Input = "ALX 43"
+elif Mac_Domain == "7:4/11":
+	Short_HUB_Input = "ALX 44"
+elif Mac_Domain == "7:5/0":
+	Short_HUB_Input = "ALX 45"
+elif Mac_Domain == "7:5/1":
+	Short_HUB_Input = "ALX 46"
+elif Mac_Domain == "7:5/2":
+	Short_HUB_Input = "ALX 47"
+elif Mac_Domain == "7:5/3":
+	Short_HUB_Input = "ALX 48"
+elif Mac_Domain == "7:5/4":
+	Short_HUB_Input = "ALX 49"
+elif Mac_Domain == "7:5/5":
+	Short_HUB_Input = "ALX 50P1"
+elif Mac_Domain == "7:5/6":
+	Short_HUB_Input = "ALX 50P4"
+elif Mac_Domain == "7:5/7":
+	Short_HUB_Input = "ALX 51P1"
+elif Mac_Domain == "7:5/8":
+	Short_HUB_Input = "ALX 51P4"
+elif Mac_Domain == "7:5/9":
+	Short_HUB_Input = "ALX 52"
+elif Mac_Domain == "7:5/10":
+	Short_HUB_Input = "ALX 53"
+elif Mac_Domain == "7:5/11":
+	Short_HUB_Input = "ALX 54"
+elif Mac_Domain == "7:9/0":
+	Short_HUB_Input = "ALX 55"
+elif Mac_Domain == "7:9/1":
+	Short_HUB_Input = "ALX 56P1"
+elif Mac_Domain == "7:9/2":
+	Short_HUB_Input = "ALX 56P4"
+elif Mac_Domain == "7:9/3":
+	Short_HUB_Input = "ALX 57"
+elif Mac_Domain == "7:9/4":
+	Short_HUB_Input = "ALX 58P1"
+elif Mac_Domain == "7:9/5":
+	Short_HUB_Input = "ALX 58P4"
+elif Mac_Domain == "7:9/6":
+	Short_HUB_Input = "ALX 59"
+elif Mac_Domain == "7:9/7":
+	Short_HUB_Input = "ALX 60"
+elif Mac_Domain == "7:9/8":
+	Short_HUB_Input = "ALX 61P1"
+elif Mac_Domain == "7:9/9":
+	Short_HUB_Input = "ALX 62P1"
+elif Mac_Domain == "7:9/10":
+	Short_HUB_Input = "ALX 62P4"
+elif Mac_Domain == "7:9/11":
+	Short_HUB_Input = "ALX 63"
+elif Mac_Domain == "7:10/0":
+	Short_HUB_Input = "ALX "
+elif Mac_Domain == "7:10/1":
+	Short_HUB_Input = "ALX 5P4"
+elif Mac_Domain == "7:10/2":
+	Short_HUB_Input = "ALX 61P4"
+elif Mac_Domain == "7:10/3":
+	Short_HUB_Input = "ALX 18P3"
+elif Mac_Domain == "7:10/4":
+	Short_HUB_Input = "ALX 18P6"
+elif Mac_Domain == "7:10/5":
+	Short_HUB_Input = "ALX "
+elif Mac_Domain == "7:10/6":
+	Short_HUB_Input = "ALX "
+elif Mac_Domain == "7:10/7":
+	Short_HUB_Input = "ALX "
+elif Mac_Domain == "7:10/8":
+	Short_HUB_Input = "ALX "
+elif Mac_Domain == "7:10/9":
+	Short_HUB_Input = "ALX "
+elif Mac_Domain == "7:10/10":
+	Short_HUB_Input = "ALX "
+elif Mac_Domain == "7:10/11":
+	Short_HUB_Input = "ALX "
+
+print("Testing MacD conversion")
+print(Short_HUB_Input)
 
 ###########################################################
 
@@ -257,16 +458,19 @@ print(Viewpoint_Short_HUB_Node)
 
 ###########################################################
 
-# Convert HUB/Node to MD
-if Viewpoint_Short_HUB_Node == "ALX 01P1":
-	Mac_Domain = "7:0/0"
-elif Viewpoint_Short_HUB_Node == " ALX 01P4":
-	Mac_Domain = "7:0/1"
+# Open chrome
+chromeOptions = webdriver.ChromeOptions()
+#chromeOptions.add_argument("--window-size=1600,600")
+chromedriver = dir_path+"/chromedriver.exe"
+browser = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
+# First Tab
+browser.get(("https://buckeye.cableos-operations.com/d/core-mac-domain-counters/core-mac-domain-counters?orgId=1&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-COS-1&var-MD=Md7:0%2F0.0"))
+# Second tab
+browser.execute_script("window.open('about:blank', 'tab2');")
+browser.switch_to.window("tab2")
+browser.get(("https://buckeye.cableos-operations.com/d/core-upstream-metrics-mh/core-upstream-metrics?orgId=1&refresh=1m&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-COS-1&var-us_rf_port=Us7:0%2F0"))
 
-print("Testing MacD conversion")
-print(Mac_Domain)
 time.sleep(2500)
-
 ###########################################################
 
 # Open chrome
