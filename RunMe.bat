@@ -10,7 +10,8 @@ pip install -U selenium
 pip install -U pynput
 pip install -U pathlib
 pip install -U openpyxl
-pip install -U PIL
+pip install -U Pillow
+pip install -U PySimpleGUI
 REM Clear
 CLS
 REM Run script

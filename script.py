@@ -3,11 +3,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pynput.keyboard import Key, Controller
+from pynput.keyboard import Key, Listener
 from pathlib import Path
 from PIL import Image
 import openpyxl
 from openpyxl import Workbook
-
+import PySimpleGUI as sg
 import csv
 import time
 import os
@@ -39,6 +40,15 @@ def quit_chrome_exception():
 	#### Quit Browser
 	time.sleep(10)
 	quit_chrome()
+
+# Function to convert   
+def listToString(s):  
+    
+    # initialize an empty string 
+    str1 = " " 
+    
+    # return string   
+    return (str1.join(s)) 
 
 ###########################################################
 
@@ -114,21 +124,14 @@ if os.path.isfile(Waterfall_AVG_Drop) and os.access(Waterfall_AVG_Drop, os.R_OK)
 
 ###########################################################
 
-# Check for login file & create a template if not present
-print("###########################################################")
-print("Checking for the credentials file")
-print("###########################################################")
 PATH = './login.txt'
 if os.path.isfile(PATH) and os.access(PATH, os.R_OK):
     print("The credentials file exists and is readable.")
-    print('\n')
 else:
     print("The credentials file is missing or not readable.")
-    print('\n')
     time.sleep(3)
     print("Generating new credentials file.")
-    print('\n')
-    credentials= open("login.txt","w+")
+    credentials = open(dir_path+"/login.txt", "w+")
     credentials.write("#enter your PEA_username in the line below." + '\n')
     credentials.write('\n')
     credentials.write("#enter your PEA_password in the line below." + '\n')
@@ -137,10 +140,27 @@ else:
     credentials.write('\n')
     credentials.write("#enter your Viewpoint_password in the line below." + '\n')
     credentials.write('\n')
+    credentials.write("#enter your Grafana_username in the line below." + '\n')
+    credentials.write('\n')
+    credentials.write("#enter your Grafana_password in the line below." + '\n')
+    credentials.write('\n')
     credentials.close
     print("Please enter your credentials in the file named 'login.txt'.")
     print('\n')
-    input("Press Enter when done...")
+    # All the stuff inside your window.
+    layout = [  [sg.Text("The credentials file is missing or not readable.")],
+                [sg.Text("Please enter your credentials in the file named 'login.txt'.")],
+                [sg.Text("Press 'Ok' when you are done to continue.")],
+                [sg.Button('Ok'), sg.Button('Cancel')]]
+    # Create the Window
+    window = sg.Window('Missing credentials', layout)
+    # Event Loop to process "events" and get the "values" of the inputs
+    while True:
+	    event, values = window.read()
+	    if event == sg.WIN_CLOSED or event == 'Cancel':
+		    window.close()
+		    sys.exit()
+	    window.close()
 
 ###########################################################
 
@@ -152,29 +172,328 @@ PEA_username=lines[1]
 PEA_password=lines[3]
 Viewpoint_username=lines[5]
 Viewpoint_password=lines[7]
+Grafana_username=lines[9]
+Grafana_password=lines[11]
 # Close passwords file
 passwords.close
 
 ###########################################################
 
-print('\n')
-print("###########################################################")
-print("Typing small tutorial.")
-print("###########################################################")
-print("At anytime press 'CTRL + C' to exit the script.")
-print("Do not click out of the open Chrome window.")
-print("Be patient.")
-print('\n')
-print("###########################################################")
-print("Starting script.")
-print("###########################################################")
-time.sleep(1)
+# Create input to ask for HUB/Node
+layout = [  [sg.Text("Type the Mac Domain for the node you would like to investigate.")],
+			[sg.Text("For example \"7:0/0\""), sg.InputText()],
+            [sg.Button('Ok'), sg.Button('Cancel')] ]
+
+# Create the Window
+window = sg.Window('Enter Mac Domain', layout)
+# Event Loop to process "events" and get the "values" of the inputs
+while True:
+    event, value_list = window.read()
+    if event == sg.WIN_CLOSED or event == 'Cancel':
+	    window.close()
+	    sys.exit()
+    Mac_Domain = value_list[0]
+    break
+
+window.close()
+
+print("TESSSST")
 
 ###########################################################
 
-# Create input to ask for HUB/Node
-print("###########################################################")
-Short_HUB_Input = input("Type the HUB & Node you would like to create a maintenance ticket for\nThis should be entered as a 2/3 letter HUB -Space- Node.\nFor example \"MAU 1\"\n###########################################################\n") 
+# Convert HUB/Node to MD
+# https://kb.ss-cae.net/pages/viewpage.action?pageId=33096083#tab-Alexis
+if Mac_Domain == "7:0/0":
+	Short_HUB_Input = "ALX 1P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/1":
+	Short_HUB_Input = "ALX 1P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/2":
+	Short_HUB_Input = "ALX 2"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/3":
+	Short_HUB_Input = "ALX 3P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/4":
+	Short_HUB_Input = "ALX 3P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/5":
+	Short_HUB_Input = "ALX 4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/6":
+	Short_HUB_Input = "ALX 5P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/7":
+	Short_HUB_Input = "ALX 6"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/8":
+	Short_HUB_Input = "ALX 7"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/9":
+	Short_HUB_Input = "ALX 8P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/10":
+	Short_HUB_Input = "ALX 8P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:0/11":
+	Short_HUB_Input = "ALX 9P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/0":
+	Short_HUB_Input = "ALX 9P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/1":
+	Short_HUB_Input = "ALX 10P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/2":
+	Short_HUB_Input = "ALX 10P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/3":
+	Short_HUB_Input = "ALX 11P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/4":
+	Short_HUB_Input = "ALX 11P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/5":
+	Short_HUB_Input = "ALX 12"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/6":
+	Short_HUB_Input = "ALX 13"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/7":
+	Short_HUB_Input = "ALX 14"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/8":
+	Short_HUB_Input = "ALX 15P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/9":
+	Short_HUB_Input = "ALX 15P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/10":
+	Short_HUB_Input = "ALX 16"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:1/11":
+	Short_HUB_Input = "ALX 17P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/0":
+	Short_HUB_Input = "ALX 17P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/1":
+	Short_HUB_Input = "ALX 18P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/2":
+	Short_HUB_Input = "ALX 18P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/3":
+	Short_HUB_Input = "ALX 19"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/4":
+	Short_HUB_Input = "ALX 20"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/5":
+	Short_HUB_Input = "ALX 21"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/6":
+	Short_HUB_Input = "ALX 22"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/7":
+	Short_HUB_Input = "ALX 23P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/8":
+	Short_HUB_Input = "ALX 23P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/9":
+	Short_HUB_Input = "ALX 24"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/10":
+	Short_HUB_Input = "ALX 25P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:2/11":
+	Short_HUB_Input = "ALX 25P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/0":
+	Short_HUB_Input = "ALX 26P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/1":
+	Short_HUB_Input = "ALX 26P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/2":
+	Short_HUB_Input = "ALX 27P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/3":
+	Short_HUB_Input = "ALX 27P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/4":
+	Short_HUB_Input = "ALX 28P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/5":
+	Short_HUB_Input = "ALX 28P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/6":
+	Short_HUB_Input = "ALX 29"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/7":
+	Short_HUB_Input = "ALX 30P1"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/8":
+	Short_HUB_Input = "ALX 30P4"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/9":
+	Short_HUB_Input = "ALX 31"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/10":
+	Short_HUB_Input = "ALX 32"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:3/11":
+	Short_HUB_Input = "ALX 33"
+	Cluster = "COS-1"
+elif Mac_Domain == "7:4/0":
+	Short_HUB_Input = "ALX 34"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/1":
+	Short_HUB_Input = "ALX 35P1"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/2":
+	Short_HUB_Input = "ALX 35P4"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/3":
+	Short_HUB_Input = "ALX 36"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/4":
+	Short_HUB_Input = "ALX 37"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/5":
+	Short_HUB_Input = "ALX 38"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/6":
+	Short_HUB_Input = "ALX 39"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/7":
+	Short_HUB_Input = "ALX 40"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/8":
+	Short_HUB_Input = "ALX 41"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/9":
+	Short_HUB_Input = "ALX 42"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/10":
+	Short_HUB_Input = "ALX 43"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:4/11":
+	Short_HUB_Input = "ALX 44"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/0":
+	Short_HUB_Input = "ALX 45"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/1":
+	Short_HUB_Input = "ALX 46"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/2":
+	Short_HUB_Input = "ALX 47"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/3":
+	Short_HUB_Input = "ALX 48"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/4":
+	Short_HUB_Input = "ALX 49"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/5":
+	Short_HUB_Input = "ALX 50P1"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/6":
+	Short_HUB_Input = "ALX 50P4"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/7":
+	Short_HUB_Input = "ALX 51P1"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/8":
+	Short_HUB_Input = "ALX 51P4"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/9":
+	Short_HUB_Input = "ALX 52"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/10":
+	Short_HUB_Input = "ALX 53"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:5/11":
+	Short_HUB_Input = "ALX 54"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/0":
+	Short_HUB_Input = "ALX 55"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/1":
+	Short_HUB_Input = "ALX 56P1"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/2":
+	Short_HUB_Input = "ALX 56P4"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/3":
+	Short_HUB_Input = "ALX 57"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/4":
+	Short_HUB_Input = "ALX 58P1"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/5":
+	Short_HUB_Input = "ALX 58P4"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/6":
+	Short_HUB_Input = "ALX 59"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/7":
+	Short_HUB_Input = "ALX 60"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/8":
+	Short_HUB_Input = "ALX 61P1"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/9":
+	Short_HUB_Input = "ALX 62P1"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/10":
+	Short_HUB_Input = "ALX 62P4"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:9/11":
+	Short_HUB_Input = "ALX 63"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/0":
+	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/1":
+	Short_HUB_Input = "ALX 5P4"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/2":
+	Short_HUB_Input = "ALX 61P4"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/3":
+	Short_HUB_Input = "ALX 18P3"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/4":
+	Short_HUB_Input = "ALX 18P6"
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/5":
+	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/6":
+	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/7":
+	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/8":
+	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/9":
+	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/10":
+	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
+elif Mac_Domain == "7:10/11":
+	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
+
+print("Testing MacD conversion")
+print(Short_HUB_Input)
 
 ###########################################################
 
@@ -251,21 +570,82 @@ Viewpoint_Short_HUB_Node = Short_HUB_Split_String+" "+Corrected_Short_Node_Split
 # Add "Node " infront of shortened HUB for PEA.
 PEA_Short_HUB_Node = "Node "+Short_HUB_Input
 
-print('Printing Vars for testing')
-print(Viewpoint_Full_HUB)
-print(Viewpoint_Short_HUB_Node)
+# Convert the "/" in the input to a ":" for easier splitting
+Mac_Domain_Corrected = Mac_Domain.replace("/", ":")
+# Split the Mac Domain into individual numbers
+Mac_Domain_Split = Mac_Domain_Corrected.split(":")
+# Place the individual numbers into variables for manipulation
+Mac_Domain_Split_First_Number = [Mac_Domain_Split[0]]
+Mac_Domain_Split_Second_Number = [Mac_Domain_Split[1]]
+Mac_Domain_Split_Third_Number = [Mac_Domain_Split[2]]
+# Convert split variables to strings
+out_str = ""
+Mac_Domain_Split_First_Number_String = out_str.join(Mac_Domain_Split_First_Number)
+Mac_Domain_Split_Second_Number_String = out_str.join(Mac_Domain_Split_Second_Number)
+Mac_Domain_Split_Third_Number_String = out_str.join(Mac_Domain_Split_Third_Number)
 
 ###########################################################
 
-# Convert HUB/Node to MD
-if Viewpoint_Short_HUB_Node == "ALX 01P1":
-	Mac_Domain = "7:0/0"
-elif Viewpoint_Short_HUB_Node == " ALX 01P4":
-	Mac_Domain = "7:0/1"
+# Open chrome
+chromeOptions = webdriver.ChromeOptions()
+#chromeOptions.add_argument("--window-size=1600,600")
+chromedriver = dir_path+"/chromedriver.exe"
+browser = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
+# First Tab
+browser.get(("https://harmonicinc.okta.com/login/login.htm?fromURI=/oauth2/v1/authorize/redirect?okta_key=3ZRZV6ACBLrdKnZEm6VZM1vShPqJ5nwPTs7cnMeLObc"))
+# Log into Grafana
+print('\n')
+print("###########################################################")
+print("Logging into Grafana.")
+print("###########################################################")
+# Type username
+Grafana_username_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div/div[2]/div/div/form/div[1]/div[2]/div[1]/div[2]/span/input")))
+print("Typing username.")
+Grafana_username_element.send_keys(Grafana_username)
+# Type password
+Grafana_username_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div/div[2]/div/div/form/div[1]/div[2]/div[2]/div[2]/span/input")))
+print("Typing password.")
+Grafana_username_element.send_keys(Grafana_password)
+# Click login
+# Add extra time for canvas to load
+time.sleep(3)
+Grafana_signin_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div/div[2]/div/div/form/div[2]/input")))
+print("Clicking sign in.")
+Grafana_signin_element.click()
+# Second tab
+browser.execute_script("window.open('about:blank', 'tab2');")
+browser.switch_to.window("tab2")
+browser.get(("https://buckeye.cableos-operations.com/d/core-mac-domain-counters/core-mac-domain-counters?orgId=1&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-"+Cluster+"&var-MD=Md"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String+".0"))
+# Third tab
+browser.execute_script("window.open('about:blank', 'tab3');")
+browser.switch_to.window("tab3")
+browser.get(("https://buckeye.cableos-operations.com/d/core-upstream-metrics-mh/core-upstream-metrics?orgId=1&refresh=1m&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-"+Cluster+"&var-us_rf_port=Us"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String))
+# Fourth tab
+browser.execute_script("window.open('about:blank', 'tab4');")
+browser.switch_to.window("tab4")
+browser.get(("https://buckeye.cableos-operations.com/d/core-upstream-metrics-mh/core-upstream-metrics?orgId=1&refresh=1m&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-"+Cluster+"&var-us_rf_port=Us"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String))
+# Close tab
+browser.switch_to.window(browser.window_handles[0])
+browser.close()
 
-print("Testing MacD conversion")
-print(Mac_Domain)
-time.sleep(2500)
+###########################################################
+
+# Create input to ask for HUB/Node
+layout = [  [sg.Text("Please review the open tabs to determine if a maintenance ticket is required.")],
+            [sg.Text("Then, press 'Ok' to scrape the node data if one is required.")],
+            [sg.Button('Ok'), sg.Button('Exit')] ]
+
+# Create the Window
+window = sg.Window('Maintenance ticket?', layout)
+# Event Loop to process "events" and get the "values" of the inputs
+while True:
+    event, value_list = window.read()
+    if event == sg.WIN_CLOSED or event == 'Exit':
+	    window.close()
+	    sys.exit()
+    break
+
+window.close()
 
 ###########################################################
 
