@@ -1,16 +1,7 @@
-<<<<<<< HEAD
 ###### Requirements without Version Specifiers ######
 selenium
 pynput
 pathlib
 openpyxl
 Pillow
-=======
-###### Requirements without Version Specifiers ######
-selenium
-pynput
-pathlib
-openpyxl
-Pillow
->>>>>>> f184b098eed66b918e9cee3b431c4a5248cd4ec9
 PySimpleGUI
