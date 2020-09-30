@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 1.0
 2020-09-30
 
@@ -15,4 +16,23 @@ Update Function
 1.0
 1.0
 1.0
+=======
+1.0
+2020-09-30
+
+Legend
+--------------
+Readme
+Version
+Batch Script
+Python Script
+Requirements
+Update Function
+
+1.0
+1.0
+1.0
+1.0
+1.0
+>>>>>>> f184b098eed66b918e9cee3b431c4a5248cd4ec9
 1.0
