@@ -1,0 +1,7 @@
+###### Requirements without Version Specifiers ######
+selenium
+pynput
+pathlib
+openpyxl
+Pillow
+PySimpleGUI
