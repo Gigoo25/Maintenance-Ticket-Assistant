@@ -3,11 +3,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pynput.keyboard import Key, Controller
+from pynput.keyboard import Key, Listener
 from pathlib import Path
 from PIL import Image
 import openpyxl
 from openpyxl import Workbook
-
+import PySimpleGUI as sg
 import csv
 import time
 import os
@@ -23,7 +24,6 @@ keyboard = Controller()
 ###########################################################
 
 def quit_chrome():
-	time.sleep(3)
 	browser.quit()
 	time.sleep(1)
 	browserExe = "Chrome"
@@ -39,6 +39,15 @@ def quit_chrome_exception():
 	#### Quit Browser
 	time.sleep(10)
 	quit_chrome()
+
+# Function to convert   
+def listToString(s):  
+    
+    # initialize an empty string 
+    str1 = " " 
+    
+    # return string   
+    return (str1.join(s)) 
 
 ###########################################################
 
@@ -114,21 +123,19 @@ if os.path.isfile(Waterfall_AVG_Drop) and os.access(Waterfall_AVG_Drop, os.R_OK)
 
 ###########################################################
 
-# Check for login file & create a template if not present
-print("###########################################################")
-print("Checking for the credentials file")
-print("###########################################################")
-PATH = './login.txt'
+if not os.path.exists(dir_path+"\Maintenance Ticket Files"):
+    os.makedirs(dir_path+"\Maintenance Ticket Files")
+
+###########################################################
+
+PATH = './Tools/Credentials.txt'
 if os.path.isfile(PATH) and os.access(PATH, os.R_OK):
     print("The credentials file exists and is readable.")
-    print('\n')
 else:
     print("The credentials file is missing or not readable.")
-    print('\n')
     time.sleep(3)
     print("Generating new credentials file.")
-    print('\n')
-    credentials= open("login.txt","w+")
+    credentials = open(dir_path+"/Tools/Credentials.txt", "w+")
     credentials.write("#enter your PEA_username in the line below." + '\n')
     credentials.write('\n')
     credentials.write("#enter your PEA_password in the line below." + '\n')
@@ -137,45 +144,62 @@ else:
     credentials.write('\n')
     credentials.write("#enter your Viewpoint_password in the line below." + '\n')
     credentials.write('\n')
+    credentials.write("#enter your Grafana_username in the line below." + '\n')
+    credentials.write('\n')
+    credentials.write("#enter your Grafana_password in the line below." + '\n')
+    credentials.write('\n')
     credentials.close
-    print("Please enter your credentials in the file named 'login.txt'.")
+    print("Please enter your credentials in the file named 'Credentials.txt'.")
     print('\n')
-    input("Press Enter when done...")
+    # All the stuff inside your window.
+    layout = [  [sg.Text("The credentials file is missing or not readable.")],
+                [sg.Text("Please enter your credentials in the file named 'Credentials.txt'.")],
+                [sg.Text("Press 'Ok' when you are done to continue.")],
+                [sg.Button('Ok'), sg.Button('Cancel')]]
+    # Create the Window
+    window = sg.Window('Missing credentials', layout)
+    # Event Loop to process "events" and get the "values" of the inputs
+    while True:
+	    event, values = window.read()
+	    if event == sg.WIN_CLOSED or event == 'Cancel':
+		    window.close()
+		    sys.exit()
+	    window.close()
 
 ###########################################################
 
 # Open passwords file
-passwords=open(dir_path+"/login.txt", "r")
+passwords=open(dir_path+"/Tools/Credentials.txt", "r")
 # Set password vars
 lines=passwords.readlines()
 PEA_username=lines[1]
 PEA_password=lines[3]
 Viewpoint_username=lines[5]
 Viewpoint_password=lines[7]
+Grafana_username=lines[9]
+Grafana_password=lines[11]
 # Close passwords file
 passwords.close
 
 ###########################################################
 
-print('\n')
-print("###########################################################")
-print("Typing small tutorial.")
-print("###########################################################")
-print("At anytime press 'CTRL + C' to exit the script.")
-print("Do not click out of the open Chrome window.")
-print("Be patient.")
-print('\n')
-print("###########################################################")
-print("Starting script.")
-print("###########################################################")
-time.sleep(1)
-
-###########################################################
-
 # Create input to ask for HUB/Node
-print("###########################################################")
-#Short_HUB_Input = input("Type the HUB & Node you would like to create a maintenance ticket for\nThis should be entered as a 2/3 letter HUB -Space- Node.\nFor example \"MAU 1\"\n###########################################################\n") 
-Mac_Domain = input("Type the Mac Domain for the node you would like to investigate.\nFor example \"7:0/0\"\n###########################################################\n") 
+layout = [  [sg.Text("Type the Mac Domain for the node you would like to investigate.")],
+			[sg.Text("For example \"7:0/0\""), sg.InputText()],
+            [sg.Button('Ok'), sg.Button('Cancel')] ]
+
+# Create the Window
+window = sg.Window('Enter Mac Domain', layout)
+# Event Loop to process "events" and get the "values" of the inputs
+while True:
+    event, value_list = window.read()
+    if event == sg.WIN_CLOSED or event == 'Cancel':
+	    window.close()
+	    sys.exit()
+    Mac_Domain = value_list[0]
+    break
+
+window.close()
 
 ###########################################################
 
@@ -183,199 +207,292 @@ Mac_Domain = input("Type the Mac Domain for the node you would like to investiga
 # https://kb.ss-cae.net/pages/viewpage.action?pageId=33096083#tab-Alexis
 if Mac_Domain == "7:0/0":
 	Short_HUB_Input = "ALX 1P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/1":
 	Short_HUB_Input = "ALX 1P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/2":
 	Short_HUB_Input = "ALX 2"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/3":
 	Short_HUB_Input = "ALX 3P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/4":
 	Short_HUB_Input = "ALX 3P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/5":
 	Short_HUB_Input = "ALX 4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/6":
 	Short_HUB_Input = "ALX 5P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/7":
 	Short_HUB_Input = "ALX 6"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/8":
 	Short_HUB_Input = "ALX 7"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/9":
 	Short_HUB_Input = "ALX 8P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/10":
 	Short_HUB_Input = "ALX 8P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:0/11":
 	Short_HUB_Input = "ALX 9P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/0":
 	Short_HUB_Input = "ALX 9P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/1":
 	Short_HUB_Input = "ALX 10P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/2":
 	Short_HUB_Input = "ALX 10P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/3":
 	Short_HUB_Input = "ALX 11P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/4":
 	Short_HUB_Input = "ALX 11P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/5":
 	Short_HUB_Input = "ALX 12"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/6":
 	Short_HUB_Input = "ALX 13"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/7":
 	Short_HUB_Input = "ALX 14"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/8":
 	Short_HUB_Input = "ALX 15P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/9":
 	Short_HUB_Input = "ALX 15P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/10":
 	Short_HUB_Input = "ALX 16"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:1/11":
 	Short_HUB_Input = "ALX 17P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/0":
 	Short_HUB_Input = "ALX 17P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/1":
 	Short_HUB_Input = "ALX 18P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/2":
 	Short_HUB_Input = "ALX 18P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/3":
 	Short_HUB_Input = "ALX 19"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/4":
 	Short_HUB_Input = "ALX 20"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/5":
 	Short_HUB_Input = "ALX 21"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/6":
 	Short_HUB_Input = "ALX 22"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/7":
 	Short_HUB_Input = "ALX 23P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/8":
 	Short_HUB_Input = "ALX 23P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/9":
 	Short_HUB_Input = "ALX 24"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/10":
 	Short_HUB_Input = "ALX 25P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:2/11":
 	Short_HUB_Input = "ALX 25P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/0":
 	Short_HUB_Input = "ALX 26P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/1":
 	Short_HUB_Input = "ALX 26P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/2":
 	Short_HUB_Input = "ALX 27P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/3":
 	Short_HUB_Input = "ALX 27P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/4":
 	Short_HUB_Input = "ALX 28P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/5":
 	Short_HUB_Input = "ALX 28P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/6":
 	Short_HUB_Input = "ALX 29"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/7":
 	Short_HUB_Input = "ALX 30P1"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/8":
 	Short_HUB_Input = "ALX 30P4"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/9":
 	Short_HUB_Input = "ALX 31"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/10":
 	Short_HUB_Input = "ALX 32"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:3/11":
 	Short_HUB_Input = "ALX 33"
+	Cluster = "COS-1"
 elif Mac_Domain == "7:4/0":
 	Short_HUB_Input = "ALX 34"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/1":
 	Short_HUB_Input = "ALX 35P1"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/2":
 	Short_HUB_Input = "ALX 35P4"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/3":
 	Short_HUB_Input = "ALX 36"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/4":
 	Short_HUB_Input = "ALX 37"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/5":
 	Short_HUB_Input = "ALX 38"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/6":
 	Short_HUB_Input = "ALX 39"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/7":
 	Short_HUB_Input = "ALX 40"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/8":
 	Short_HUB_Input = "ALX 41"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/9":
 	Short_HUB_Input = "ALX 42"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/10":
 	Short_HUB_Input = "ALX 43"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:4/11":
 	Short_HUB_Input = "ALX 44"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/0":
 	Short_HUB_Input = "ALX 45"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/1":
 	Short_HUB_Input = "ALX 46"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/2":
 	Short_HUB_Input = "ALX 47"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/3":
 	Short_HUB_Input = "ALX 48"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/4":
 	Short_HUB_Input = "ALX 49"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/5":
 	Short_HUB_Input = "ALX 50P1"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/6":
 	Short_HUB_Input = "ALX 50P4"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/7":
 	Short_HUB_Input = "ALX 51P1"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/8":
 	Short_HUB_Input = "ALX 51P4"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/9":
 	Short_HUB_Input = "ALX 52"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/10":
 	Short_HUB_Input = "ALX 53"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:5/11":
 	Short_HUB_Input = "ALX 54"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/0":
 	Short_HUB_Input = "ALX 55"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/1":
 	Short_HUB_Input = "ALX 56P1"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/2":
 	Short_HUB_Input = "ALX 56P4"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/3":
 	Short_HUB_Input = "ALX 57"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/4":
 	Short_HUB_Input = "ALX 58P1"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/5":
 	Short_HUB_Input = "ALX 58P4"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/6":
 	Short_HUB_Input = "ALX 59"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/7":
 	Short_HUB_Input = "ALX 60"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/8":
 	Short_HUB_Input = "ALX 61P1"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/9":
 	Short_HUB_Input = "ALX 62P1"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/10":
 	Short_HUB_Input = "ALX 62P4"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:9/11":
 	Short_HUB_Input = "ALX 63"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/0":
 	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/1":
 	Short_HUB_Input = "ALX 5P4"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/2":
 	Short_HUB_Input = "ALX 61P4"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/3":
 	Short_HUB_Input = "ALX 18P3"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/4":
 	Short_HUB_Input = "ALX 18P6"
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/5":
 	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/6":
 	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/7":
 	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/8":
 	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/9":
 	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/10":
 	Short_HUB_Input = "ALX "
+	Cluster = "COS-2"
 elif Mac_Domain == "7:10/11":
 	Short_HUB_Input = "ALX "
-
-print("Testing MacD conversion")
-print(Short_HUB_Input)
+	Cluster = "COS-2"
 
 ###########################################################
 
@@ -452,25 +569,118 @@ Viewpoint_Short_HUB_Node = Short_HUB_Split_String+" "+Corrected_Short_Node_Split
 # Add "Node " infront of shortened HUB for PEA.
 PEA_Short_HUB_Node = "Node "+Short_HUB_Input
 
-print('Printing Vars for testing')
-print(Viewpoint_Full_HUB)
-print(Viewpoint_Short_HUB_Node)
+# Convert the "/" in the input to a ":" for easier splitting
+Mac_Domain_Corrected = Mac_Domain.replace("/", ":")
+# Split the Mac Domain into individual numbers
+Mac_Domain_Split = Mac_Domain_Corrected.split(":")
+# Place the individual numbers into variables for manipulation
+Mac_Domain_Split_First_Number = [Mac_Domain_Split[0]]
+Mac_Domain_Split_Second_Number = [Mac_Domain_Split[1]]
+Mac_Domain_Split_Third_Number = [Mac_Domain_Split[2]]
+# Convert split variables to strings
+out_str = ""
+Mac_Domain_Split_First_Number_String = out_str.join(Mac_Domain_Split_First_Number)
+Mac_Domain_Split_Second_Number_String = out_str.join(Mac_Domain_Split_Second_Number)
+Mac_Domain_Split_Third_Number_String = out_str.join(Mac_Domain_Split_Third_Number)
 
 ###########################################################
 
 # Open chrome
 chromeOptions = webdriver.ChromeOptions()
 #chromeOptions.add_argument("--window-size=1600,600")
-chromedriver = dir_path+"/chromedriver.exe"
+chromedriver = dir_path+"/Tools/Chrome_Driver/chromedriver.exe"
 browser = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
 # First Tab
-browser.get(("https://buckeye.cableos-operations.com/d/core-mac-domain-counters/core-mac-domain-counters?orgId=1&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-COS-1&var-MD=Md7:0%2F0.0"))
+browser.get(("https://harmonicinc.okta.com/login/login.htm?fromURI=/oauth2/v1/authorize/redirect?okta_key=3ZRZV6ACBLrdKnZEm6VZM1vShPqJ5nwPTs7cnMeLObc"))
+# Log into Grafana
+# Type username
+Grafana_username_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div/div[2]/div/div/form/div[1]/div[2]/div[1]/div[2]/span/input")))
+Grafana_username_element.send_keys(Grafana_username)
+# Type password
+Grafana_username_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div/div[2]/div/div/form/div[1]/div[2]/div[2]/div[2]/span/input")))
+Grafana_username_element.send_keys(Grafana_password)
+# Click login
+# Add extra time for canvas to load
+time.sleep(3)
+Grafana_signin_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div/div[2]/div/div/form/div[2]/input")))
+Grafana_signin_element.click()
 # Second tab
 browser.execute_script("window.open('about:blank', 'tab2');")
 browser.switch_to.window("tab2")
-browser.get(("https://buckeye.cableos-operations.com/d/core-upstream-metrics-mh/core-upstream-metrics?orgId=1&refresh=1m&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-COS-1&var-us_rf_port=Us7:0%2F0"))
+browser.get(("https://buckeye.cableos-operations.com/d/core-mac-domain-counters/core-mac-domain-counters?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-"+Cluster+"&var-MD=Md"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String+".0"))
+# Third tab
+browser.execute_script("window.open('about:blank', 'tab3');")
+browser.switch_to.window("tab3")
+browser.get(("https://buckeye.cableos-operations.com/d/core-cm-states-per-mac-domain/core-cm-states-per-mac-domain?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-"+Cluster+"&var-md=Md"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String+".0"))
+# Fourth tab
+browser.execute_script("window.open('about:blank', 'tab4');")
+browser.switch_to.window("tab4")
+browser.get(("https://buckeye.cableos-operations.com/d/core-upstream-metrics-mh/core-upstream-metrics?orgId=1&refresh=1m&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Short_HUB_Split_String+"-"+Cluster+"&var-us_rf_port=Us"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String))
+# Fifth tab
+browser.execute_script("window.open('about:blank', 'tab5');")
+browser.switch_to.window("tab5")
+browser.get(("http://10.6.10.12/ViewPoint/site/Site/Login"))
+# Log into Viewpoint
+# Type username
+Viewpoint_username_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[3]/input[1]")))
+Viewpoint_username_element.send_keys(Viewpoint_username)
+# Type password
+Viewpoint_password_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[3]/input[2]")))
+Viewpoint_password_element.send_keys(Viewpoint_password)
+# Click "login"
+loginButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[3]/div[1]/a")))
+loginButton.click()
+# Click "RPM"
+RPMButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[3]/div[1]/div[1]/div/div/div/ul/ul/li/a[1]")))
+RPMButton.click()
+# Click "Buckeye Cable"
+BuckeyeCableButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[3]/div[1]/div[1]/div/div/div/ul/ul/ul/li/a[1]")))
+BuckeyeCableButton.click()
+# Click "Alexis"
+Full_HUB = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Full_HUB)))
+Full_HUB.click()
+# Click "Node"
+Shortened_Node = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Short_HUB_Node)))
+Shortened_Node.click()
+# Click "Return Spectrum"
+Return_Spectrum_Button = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div/ul/li")))
+Return_Spectrum_Button.click()	
+# Click "Mode"
+Mode_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[2]/li[2]/select")))
+Mode_Dropdown.click()
+# Click "Historical"
+Historical_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[2]/li[2]/select/option[2]")))
+Historical_Dropdown.click()
+# Click "Display"
+Display_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[2]/select")))
+Display_Dropdown.click()
+# Click "Spectrum"
+Spectrum_Dropdown_Option = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[2]/select/option[1]")))
+Spectrum_Dropdown_Option.click()
+# Close First tab
+browser.switch_to.window(browser.window_handles[0])
+browser.close()
 
-time.sleep(2500)
+###########################################################
+
+# Create input to ask for HUB/Node
+layout = [  [sg.Text("Please review the open tabs to determine if a maintenance ticket is required.")],
+            [sg.Text("Then, press 'Ok' to scrape the node data if one is required.")],
+            [sg.Button('Ok'), sg.Button('Exit')] ]
+
+# Create the Window
+window = sg.Window('Maintenance ticket?', layout)
+# Event Loop to process "events" and get the "values" of the inputs
+while True:
+    event, value_list = window.read()
+    if event == sg.WIN_CLOSED or event == 'Exit':
+	    window.close()
+	    quit_chrome()
+	    sys.exit()
+    break
+
+window.close()
+
 ###########################################################
 
 # Open chrome
@@ -478,62 +688,49 @@ chromeOptions = webdriver.ChromeOptions()
 prefs = {"download.default_directory" : dir_path+"\Maintenance Ticket Files\\"}
 chromeOptions.add_experimental_option("prefs",prefs)
 #chromeOptions.add_argument("--window-size=1600,600")
-chromedriver = dir_path+"/chromedriver.exe"
+chromedriver = dir_path+"/Tools/Chrome_Driver/chromedriver.exe"
 browser = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
 # Open PEA in Chrome.
 browser.get(("https://buckeye.pea.zcorum.com/pnm4/index.php/detailView"))
 
 # Grab screenshot of the PEA map for the node & export the bad visible modems.
 try:
-	# Log into PEA
-	print('\n')
-	print("###########################################################")
-	print("Logging into PEA.")
-	print("###########################################################")
-	
+	# Log into PEA	
 	# Type username
 	PEA_username_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div/div/div/div[5]/form/div[1]/div/input")))
-	print("Typing username.")
 	PEA_username_element.send_keys(PEA_username)
 	
 	# Type password
 	PEA_username_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div/div/div/div[5]/form/div[2]/div/input")))
-	print("Typing password.")
 	PEA_username_element.send_keys(PEA_password)
 	
 	# Enter HUB in the "HUB" field
 	# Add extra time for page to load
 	time.sleep(3)
 	HUB_Field = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[2]/div/input[2]")))
-	print("Entering HUB.")
 	HUB_Field.send_keys(PEA_Short_HUB_Node)
 	
 	# Click the suggested Node
 	# Add extra time for page to load
 	time.sleep(1)
 	suggestButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[2]/div/select/option[1]")))
-	print("Clicking Suggest button.")
 	suggestButton.click()
 	
 	# Click the search button
 	# Add extra time for page to load
 	time.sleep(1)
 	searchButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[2]/button")))
-	print("Clicking Search button.")
 	searchButton.click()
 	
 	# Click the upstream search button
 	upstreamsearchButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[7]/div[2]/div/div[3]/button[2]")))
-	print("Clicking Upstream Search button.")
 	upstreamsearchButton.click()
 	
 	# Click the red button
 	redButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[4]/span/input[1]")))
-	print("Clicking Red button.")
 	redButton.click()
 
 	# Take screenshot of the map
-	print("Take screenshot.")
 	# Add extra time for canvas to load
 	time.sleep(3)
 	element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[3]/div/div[1]/div[2]/div/div/div/div[1]/div[1]/canvas")))
@@ -541,7 +738,6 @@ try:
 	size = element.size
 	browser.save_screenshot(dir_path+"/Maintenance Ticket Files/Full_Map_Element.png")
 	# Crop screenshot of the map
-	print("Crop screenshot.")
 	x = location['x']
 	y = location['y']
 	width = location['x']+size['width']
@@ -552,12 +748,10 @@ try:
 	
 	# Click on data tab
 	dataTab = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[3]/ul/li[2]/a")))
-	print("Click on data tab.")
 	dataTab.click()
 	
 	# Click on sorting
 	VTDR_Element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//th[contains(text(),'Outside Plant')]")))
-	print("Sorting by VTDR.")
 	VTDR_Element.click()
 	time.sleep(2)
 	VTDR_Element.click()
@@ -567,27 +761,22 @@ try:
 	
 	# Click on Export
 	Export_Element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[3]/div/div[2]/div/div/div[1]/div[6]/div/button")))
-	print("Click Export.")
 	Export_Element.click()
 
 	# Click on Only Visible Data
 	Only_Visible_Data_Element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[3]/div/div[2]/div/div/div[1]/div[6]/div/ul/li[2]/a")))
-	print("Click Only Visible Data.")
 	Only_Visible_Data_Element.click()
 	
 	# Click the yellow button
 	yellowButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[4]/span/input[2]")))
-	print("Clicking Yellow button.")
 	yellowButton.click()
 	
 	# Click on data tab
 	dataTab = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[3]/ul/li[2]/a")))
-	print("Click on data tab.")
 	dataTab.click()
 	
 	# Click on sorting
 	VTDR_Element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "//th[contains(text(),'Outside Plant')]")))
-	print("Sorting by VTDR.")
 	VTDR_Element.click()
 	time.sleep(2)
 	VTDR_Element.click()
@@ -597,24 +786,20 @@ try:
 	
 	# Click on Export
 	Export_Element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[3]/div/div[2]/div/div/div[1]/div[6]/div/button")))
-	print("Click Export.")
 	Export_Element.click()
 
 	# Click on Only Visible Data
 	Only_Visible_Data_Element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[3]/div/div[2]/div/div/div[1]/div[6]/div/ul/li[2]/a")))
-	print("Click Only Visible Data.")
 	Only_Visible_Data_Element.click()
 	
 	#### Quit Browser
 	time.sleep(2)
-	print("Exiting PEA.")
 	quit_chrome()
 except Exception:
 	quit_chrome_exception()
 	sys.exit()
 
 # Convert CSV to XLSX
-print("Converting file to XLSX.")
 wb = Workbook()
 ws = wb.active
 with open(dir_path+"\Maintenance Ticket Files\ModemReport.csv", 'r') as f:
@@ -628,7 +813,6 @@ with open(dir_path+"\Maintenance Ticket Files\ModemReport (1).csv", 'r') as f:
 wb.save(dir_path+"\Maintenance Ticket Files\ModemReport_RedYellow.xlsx")
 
 # Remove unecessary columns for PEA vTDR
-print("Deleting unecessary columns for PEA vTDR.")
 wb = openpyxl.load_workbook(dir_path+"\Maintenance Ticket Files\ModemReport_RedYellow.xlsx")
 ws = wb.active
 # Delete B,C,D
@@ -639,10 +823,8 @@ ws.delete_cols(12,7)
 ws.delete_cols(13,11)
 # Save XLSX file
 wb.save(dir_path+"\Maintenance Ticket Files\PEA vTDR.xlsx")
-print("Saving file.")
 
 # Remove unecessary columns for critical modems
-print("Deleting unecessary columns for critical modems.")
 wb = openpyxl.load_workbook(dir_path+"\Maintenance Ticket Files\ModemReport_Red.xlsx")
 ws = wb.active
 # Delete B-U
@@ -651,10 +833,8 @@ ws.delete_cols(2,20)
 ws.delete_cols(3,11)
 # Save XLSX file
 wb.save(dir_path+"\Maintenance Ticket Files\PEA critical modems.xlsx")
-print("Saving file.")
 
 # Delete extra files
-print("Deleting extra files.")
 os.remove(dir_path+"\Maintenance Ticket Files\ModemReport.csv")
 os.remove(dir_path+"\Maintenance Ticket Files\ModemReport (1).csv")
 os.remove(dir_path+"\Maintenance Ticket Files\ModemReport_Red.xlsx")
@@ -668,7 +848,7 @@ chromeOptions = webdriver.ChromeOptions()
 prefs = {"download.default_directory" : dir_path+"\Maintenance Ticket Files\\"}
 chromeOptions.add_experimental_option("prefs",prefs)
 #chromeOptions.add_argument("--window-size=1600,600")
-chromedriver = dir_path+"/chromedriver.exe"
+chromedriver = dir_path+"/Tools/Chrome_Driver/chromedriver.exe"
 browser = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
 # Open Viewpoint in Chrome.
 browser.get(("http://10.6.10.12/ViewPoint/site/Site/Login"))
@@ -676,78 +856,59 @@ browser.get(("http://10.6.10.12/ViewPoint/site/Site/Login"))
 # 
 try:
 	# Log into Viewpoint
-	print('\n')
-	print("###########################################################")
-	print("Logging into Viewpoint.")
-	print("###########################################################")
-
 	# Type username
 	Viewpoint_username_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[3]/input[1]")))
-	print("Typing username.")
 	Viewpoint_username_element.send_keys(Viewpoint_username)
 
 	# Type password
 	Viewpoint_password_element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[3]/input[2]")))
-	print("Typing password.")
 	Viewpoint_password_element.send_keys(Viewpoint_password)
 
 	# Click "login"
 	loginButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[3]/div[1]/a")))
-	print("Clicking login.")
 	loginButton.click()
 
 	# Click "RPM"
 	RPMButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[3]/div[1]/div[1]/div/div/div/ul/ul/li/a[1]")))
-	print("Clicking RPM.")
 	RPMButton.click()
 
 	# Click "Buckeye Cable"
 	BuckeyeCableButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[3]/div[1]/div[1]/div/div/div/ul/ul/ul/li/a[1]")))
-	print("Clicking Buckeye Cable.")
 	BuckeyeCableButton.click()
 
 	# Click "Alexis"
 	Full_HUB = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Full_HUB)))
-	print("Clicking on "+Viewpoint_Full_HUB+".")
 	Full_HUB.click()
 
 	# Click "Node"
 	Shortened_Node = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Short_HUB_Node)))
-	print("Clicking on "+Viewpoint_Short_HUB_Node+".")
 	Shortened_Node.click()
 
 	# Click "Return Spectrum"
 	Return_Spectrum_Button = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div/ul/li")))
-	print("Clicking on Return Spectrum.")
 	Return_Spectrum_Button.click()
 	
 	# Click "Mode"
 	Mode_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[2]/li[2]/select")))
-	print("Clicking on Mode.")
 	Mode_Dropdown.click()
 
 	# Click "Historical"
 	Historical_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[2]/li[2]/select/option[2]")))
-	print("Clicking on Historical.")
 	Historical_Dropdown.click()
 
 	# Click "Display"
 	Display_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[2]/select")))
-	print("Clicking on Display.")
 	Display_Dropdown.click()
 
 	# Click "Spectrum"
 	Spectrum_Dropdown_Option = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[2]/select/option[1]")))
-	print("Clicking on Spectrum.")
 	Spectrum_Dropdown_Option.click()
 
 	# Click "Back button for 15 minute increments"
 	Back_15_Minute_Button = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div[2]/ul/li[2]")))
-	print("Clicking on back button.")
 	Back_15_Minute_Button.click()
 
 	# Take screenshot of the average spectrum
-	print("Taking screenshots.")
 	# Add extra time for canvas to load
 	time.sleep(3)
 	element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div[4]/div/div/div/div[1]")))
@@ -755,7 +916,6 @@ try:
 	size = element.size
 	browser.save_screenshot(Full_Spectrum_AVG_Drop)
 	# Crop screenshot of the average spectrum
-	print("Crop screenshot.")
 	x = location['x']
 	y = location['y']
 	width = location['x']+size['width']
@@ -766,16 +926,13 @@ try:
 
 	# Click "Active Trace"
 	Active_Trace_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[2]/ul/li[2]/select")))
-	print("Clicking on Active Trace.")
 	Active_Trace_Dropdown.click()
 
 	# Click "MAX"
 	Max_Dropdown_Option = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[2]/ul/li[2]/select/option[1]")))
-	print("Clicking on MAX.")
 	Max_Dropdown_Option.click()
 
 	# Take screenshot of the max spectrum
-	print("Taking screenshots.")
 	# Add extra time for canvas to load
 	time.sleep(3)
 	element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div[4]/div/div/div/div[1]")))
@@ -783,7 +940,6 @@ try:
 	size = element.size
 	browser.save_screenshot(Full_Spectrum_MAX_Drop)
 	# Crop screenshot of the max spectrum
-	print("Crop screenshot.")
 	x = location['x']
 	y = location['y']
 	width = location['x']+size['width']
@@ -794,26 +950,21 @@ try:
 
 	# Click "Display"
 	Display_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[2]/select")))
-	print("Clicking on Display.")
 	Display_Dropdown.click()
 
 	# Click "Waterfall"
 	Waterfall_Dropdown_Option = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[2]/select/option[2]")))
-	print("Clicking on Waterfall.")
 	Waterfall_Dropdown_Option.click()
 
 	# Click "Time Span"
 	Time_Span_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[4]/select")))
-	print("Clicking on Time Span.")
 	Time_Span_Dropdown.click()
 
 	# Click "24 Hr"
 	Twenty_four_hours_dropdown_option = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[4]/select/option[5]")))
-	print("Clicking on 24 HR.")
 	Twenty_four_hours_dropdown_option.click()
 
 	# Take screenshot of the 24 hr MAX waterfall
-	print("Taking screenshots.")
 	# Add extra time for canvas to load
 	time.sleep(3)
 	element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div[4]/canvas[1]")))
@@ -821,7 +972,6 @@ try:
 	size = element.size
 	browser.save_screenshot(Full_Waterfall_MAX_Drop)
 	# Crop screenshot of the 24 hr MAX waterfall
-	print("Crop screenshot.")
 	x = location['x']
 	y = location['y']
 	width = location['x']+size['width']
@@ -832,16 +982,13 @@ try:
 
 	# Click "Active Trace"
 	Active_Trace_Dropdown = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[2]/ul/li[2]/select")))
-	print("Clicking on Active Trace.")
 	Active_Trace_Dropdown.click()
 
 	# Click "AVG"
 	Average_Dropdown_Option = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[2]/ul/li[2]/select/option[2]")))
-	print("Clicking on Average.")
 	Average_Dropdown_Option.click()
 	
 	# Take screenshot of the 24 hr AVG waterfall
-	print("Taking screenshots.")
 	# Add extra time for canvas to load
 	time.sleep(3)
 	element = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div[4]/canvas[1]")))
@@ -849,7 +996,6 @@ try:
 	size = element.size
 	browser.save_screenshot(Full_Waterfall_AVG_Drop)
 	# Crop screenshot of the 24 hr AVG waterfall
-	print("Crop screenshot.")
 	x = location['x']
 	y = location['y']
 	width = location['x']+size['width']
@@ -859,14 +1005,12 @@ try:
 	im.save(Waterfall_AVG_Drop)
 
 	# Delete extra files
-	print("Deleting extra files.")
 	os.remove(Full_Spectrum_MAX_Drop)
 	os.remove(Full_Spectrum_AVG_Drop)
 	os.remove(Full_Waterfall_MAX_Drop)
 	os.remove(Full_Waterfall_AVG_Drop)
 
 	#### Quit Browser
-	print("Exiting Viewpoint.")
 	quit_chrome()
 except Exception:
 	quit_chrome_exception()
