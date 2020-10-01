@@ -1,7 +1,7 @@
 @echo off
 
 REM Minimize Window
-if not "%1" == "min" start /MIN cmd /c %0 min & exit/b
+REM if not "%1" == "min" start /MIN cmd /c %0 min & exit/b
 
 REM Set location of directory
 %~d0
@@ -18,7 +18,7 @@ CLS
 
 REM Run update
 python %Update_Script_Location%
-
+pause
 REM Clear screen
 CLS
 
