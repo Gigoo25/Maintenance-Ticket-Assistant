@@ -1,7 +1,7 @@
 @echo off
 
 REM Minimize Window
-if not "%1" == "min" start /MIN cmd /c %0 min & exit/b
+REM if not "%1" == "min" start /MIN cmd /c %0 min & exit/b
 
 REM Set location of directory
 %~d0

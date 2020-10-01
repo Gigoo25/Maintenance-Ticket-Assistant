@@ -1,4 +1,4 @@
-@echo off
+@echo on
 
 REM Set repo variables
 set REPO_URL=https://raw.githubusercontent.com/Gigoo25/Maintenance-Ticket-Assistant
@@ -6,7 +6,7 @@ set REPO_BRANCH=master
 
 REM Set tool verison check variables
 set CURRENT_VERSION=unidentified
-set CHECK_UPDATE_VERSION=unidentified
+set ONLINE_VERSION=unidentified
 
 REM Text files local variables
 set Readme_Local=unidentified
@@ -49,7 +49,7 @@ if exist "%TEMP%\Version_Check.txt" (
 REM Download version to compare from online
 "%root%\Tools\WGET\wget.exe" -q "%REPO_URL%/%REPO_BRANCH%/Tools/Version.txt" -O "%TEMP%\Version_Check.txt" 2>NUL
 if /i %ERRORLEVEL%==0 (
-	set /p CHECK_UPDATE_VERSION=<%TEMP%\Version_Check.txt
+	set /p ONLINE_VERSION=<%TEMP%\Version_Check.txt
 ) else (
 	REM Display error message that tool version was not found.
 	echo "Error extracting update version."
@@ -57,10 +57,10 @@ if /i %ERRORLEVEL%==0 (
 )
 
 REM Check if downloaded version is greater
-if "%CHECK_UPDATE_VERSION%" GTR "%CURRENT_VERSION%" (
-	goto update_yes
+if "%ONLINE_VERSION%" GTR "%CURRENT_VERSION%" (
+	goto :update_yes
 ) else (
-	goto update_no
+	goto :update_no
 )
 
 REM Decline update
@@ -70,6 +70,7 @@ GOTO :EOF
 
 REM Accept update
 echo "Update was found!"
+echo "Updating..."
 :update_yes
 
 REM Set variables for local text files
