@@ -1,4 +1,4 @@
-1
+1.0
 2020-09-30
 
 Legend
@@ -8,11 +8,11 @@ Version
 Batch Script
 Python Script
 Requirements
-Update Function
+Update Script
 
-1
-1
-1
-1
-1
-1
+1.0
+1.0
+1.0
+1.0
+1.0
+1.0
