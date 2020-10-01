@@ -109,7 +109,8 @@ if ONLINE_VERSION > CURRENT_VERSION:
 else:
     print("\n")
     print("No update was found.")
-    time.sleep(5)
+    # Sleep & Quit
+    time.sleep(2)
     sys.exit()
 
 # Update Readme file

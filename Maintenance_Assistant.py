@@ -16,18 +16,20 @@ import sys
 
 ###########################################################
 
-#get script directory
+# Get script directory
 dir_path = os.path.dirname(os.path.abspath(__file__))
-#set controller variable
+# Set controller variable
 keyboard = Controller()
 
 ###########################################################
 
+# Define function to quit Chrome
 def quit_chrome():
 	browser.quit()
 	time.sleep(1)
 	browserExe = "Chrome"
 
+# Define function for Chrome exeption
 def quit_chrome_exception():
 	#### This exception occurs if the element are not found in the webpage.
 	print("###########################################################")
@@ -40,26 +42,34 @@ def quit_chrome_exception():
 	time.sleep(10)
 	quit_chrome()
 
-# Function to convert   
+# Define function to convert to string
 def listToString(s):  
     
-    # initialize an empty string 
+    # Initialize an empty string 
     str1 = " " 
     
-    # return string   
+    # Return string   
     return (str1.join(s)) 
 
 ###########################################################
 
 # Delete old files if they exist
-ModemReportCSV = dir_path+"\Maintenance Ticket Files\ModemReport.csv"
-ModemReportCSV1 = dir_path+"\Maintenance Ticket Files\ModemReport (1).csv"
-ModemReport_Red = dir_path+"\Maintenance Ticket Files\ModemReport_Red.xlsx"
-ModemReport_RedYellow = dir_path+"\Maintenance Ticket Files\ModemReport_RedYellow.xlsx"
-Full_Map_Element = dir_path+"\Maintenance Ticket Files\Full_Map_Element.png"
-PEA_critical_modem_map = dir_path+"\Maintenance Ticket Files\PEA critical modem map.png"
-PEA_critical_modems_XLSX = dir_path+"\Maintenance Ticket Files\PEA critical modems.xlsx"
-PEA_vTDR_XLSX = dir_path+"\Maintenance Ticket Files\PEA vTDR.xlsx"
+ModemReportCSV = dir_path+"\\Maintenance Ticket Files\\ModemReport.csv"
+ModemReportCSV1 = dir_path+"\\Maintenance Ticket Files\\ModemReport (1).csv"
+ModemReport_Red = dir_path+"\\Maintenance Ticket Files\\ModemReport_Red.xlsx"
+ModemReport_RedYellow = dir_path+"\\Maintenance Ticket Files\\ModemReport_RedYellow.xlsx"
+Full_Map_Element = dir_path+"\\Maintenance Ticket Files\\Full_Map_Element.png"
+PEA_critical_modem_map = dir_path+"\\Maintenance Ticket Files\\PEA critical modem map.png"
+PEA_critical_modems_XLSX = dir_path+"\\Maintenance Ticket Files\\PEA critical modems.xlsx"
+PEA_vTDR_XLSX = dir_path+"\\Maintenance Ticket Files\\PEA vTDR.xlsx"
+Full_Spectrum_MAX_Drop = dir_path+"\\Maintenance Ticket Files\\Full_Spectrum_Max_Element.png"
+Full_Waterfall_MAX_Drop = dir_path+"\\Maintenance Ticket Files\\Full_Waterfall_Max_Element.png"
+Full_Spectrum_AVG_Drop = dir_path+"\\Maintenance Ticket Files\\Full_Spectrum_Average_Element.png"
+Full_Waterfall_AVG_Drop = dir_path+"\\Maintenance Ticket Files\\Full_Waterfall_Avg_Element.png"
+Spectrum_MAX_Drop = dir_path+"\\Maintenance Ticket Files\\Spectrum_Max.png"
+Waterfall_MAX_Drop = dir_path+"\\Maintenance Ticket Files\\Waterfall_Max.png"
+Spectrum_AVG_Drop = dir_path+"\\Maintenance Ticket Files\\Spectrum_Average.png"
+Waterfall_AVG_Drop = dir_path+"\\Maintenance Ticket Files\\Waterfall_Average.png"
 
 if os.path.isfile(ModemReportCSV) and os.access(ModemReportCSV, os.R_OK):
 	os.remove(ModemReportCSV)
@@ -84,18 +94,6 @@ if os.path.isfile(PEA_critical_modems_XLSX) and os.access(PEA_critical_modems_XL
 
 if os.path.isfile(PEA_vTDR_XLSX) and os.access(PEA_vTDR_XLSX, os.R_OK):
 	os.remove(PEA_vTDR_XLSX)
-
-Full_Spectrum_MAX_Drop = dir_path+"\Maintenance Ticket Files\Full_Spectrum_Max_Element.png"
-Full_Waterfall_MAX_Drop = dir_path+"\Maintenance Ticket Files\Full_Waterfall_Max_Element.png"
-
-Full_Spectrum_AVG_Drop = dir_path+"\Maintenance Ticket Files\Full_Spectrum_Average_Element.png"
-Full_Waterfall_AVG_Drop = dir_path+"\Maintenance Ticket Files\Full_Waterfall_Avg_Element.png"
-
-Spectrum_MAX_Drop = dir_path+"\Maintenance Ticket Files\Spectrum_Max.png"
-Waterfall_MAX_Drop = dir_path+"\Maintenance Ticket Files\Waterfall_Max.png"
-
-Spectrum_AVG_Drop = dir_path+"\Maintenance Ticket Files\Spectrum_Average.png"
-Waterfall_AVG_Drop = dir_path+"\Maintenance Ticket Files\Waterfall_Average.png"
 
 if os.path.isfile(Full_Spectrum_MAX_Drop) and os.access(Full_Spectrum_MAX_Drop, os.R_OK):
 	os.remove(Full_Spectrum_MAX_Drop)
@@ -123,34 +121,33 @@ if os.path.isfile(Waterfall_AVG_Drop) and os.access(Waterfall_AVG_Drop, os.R_OK)
 
 ###########################################################
 
-if not os.path.exists(dir_path+"\Maintenance Ticket Files"):
-    os.makedirs(dir_path+"\Maintenance Ticket Files")
+# Make output directory if not found
+if not os.path.exists(dir_path+"\\Maintenance Ticket Files"):
+    os.makedirs(dir_path+"\\Maintenance Ticket Files")
 
 ###########################################################
 
+# Define the path for the credentials file
 PATH = './Tools/Credentials.txt'
+
+# Define lines for the credentials file
+line1 = "# enter your PEA_username in the line below."
+line2 = "# enter your PEA_password in the line below."
+line3 = "# enter your Viewpoint_username in the line below."
+line4 = "# enter your Viewpoint_password in the line below"
+line5 = "# enter your Grafana_username in the line below."
+line6 = "# enter your Grafana_password in the line below."
+
 if os.path.isfile(PATH) and os.access(PATH, os.R_OK):
     print("The credentials file exists and is readable.")
 else:
     print("The credentials file is missing or not readable.")
-    time.sleep(3)
-    print("Generating new credentials file.")
+    print("Generating credentials file.")
+    time.sleep(1)
     credentials = open(dir_path+"/Tools/Credentials.txt", "w+")
-    credentials.write("#enter your PEA_username in the line below." + '\n')
-    credentials.write('\n')
-    credentials.write("#enter your PEA_password in the line below." + '\n')
-    credentials.write('\n')
-    credentials.write("#enter your Viewpoint_username in the line below." + '\n')
-    credentials.write('\n')
-    credentials.write("#enter your Viewpoint_password in the line below." + '\n')
-    credentials.write('\n')
-    credentials.write("#enter your Grafana_username in the line below." + '\n')
-    credentials.write('\n')
-    credentials.write("#enter your Grafana_password in the line below." + '\n')
-    credentials.write('\n')
-    credentials.close
-    print("Please enter your credentials in the file named 'Credentials.txt'.")
-    print('\n')
+    credentials.write(line1 + "\n\n" + line2 + "\n\n" + line3 + "\n\n" + line4 + "\n\n" + line5 + "\n\n" + line6 + "\n")
+    credentials.close()
+
     # All the stuff inside your window.
     layout = [  [sg.Text("The credentials file is missing or not readable.")],
                 [sg.Text("Please enter your credentials in the file named 'Credentials.txt'.")],
@@ -160,11 +157,11 @@ else:
     window = sg.Window('Missing credentials', layout)
     # Event Loop to process "events" and get the "values" of the inputs
     while True:
-	    event, values = window.read()
-	    if event == sg.WIN_CLOSED or event == 'Cancel':
-		    window.close()
-		    sys.exit()
-	    window.close()
+        event, values = window.read()
+        if event == sg.WIN_CLOSED or event == 'Cancel':
+            window.close()
+            sys.exit()
+        window.close()
 
 ###########################################################
 
@@ -204,7 +201,6 @@ window.close()
 ###########################################################
 
 # Convert HUB/Node to MD
-# https://kb.ss-cae.net/pages/viewpage.action?pageId=33096083#tab-Alexis
 if Mac_Domain == "7:0/0":
 	Short_HUB_Input = "ALX 1P1"
 	Cluster = "COS-1"
@@ -685,7 +681,7 @@ window.close()
 
 # Open chrome
 chromeOptions = webdriver.ChromeOptions()
-prefs = {"download.default_directory" : dir_path+"\Maintenance Ticket Files\\"}
+prefs = {"download.default_directory" : dir_path+"\\Maintenance Ticket Files\\"}
 chromeOptions.add_experimental_option("prefs",prefs)
 #chromeOptions.add_argument("--window-size=1600,600")
 chromedriver = dir_path+"/Tools/Chrome_Driver/chromedriver.exe"
@@ -802,18 +798,18 @@ except Exception:
 # Convert CSV to XLSX
 wb = Workbook()
 ws = wb.active
-with open(dir_path+"\Maintenance Ticket Files\ModemReport.csv", 'r') as f:
+with open(dir_path+"\\Maintenance Ticket Files\\ModemReport.csv", 'r') as f:
     for row in csv.reader(f):
         ws.append(row)
-wb.save(dir_path+"\Maintenance Ticket Files\ModemReport_Red.xlsx")
+wb.save(dir_path+"\\Maintenance Ticket Files\\ModemReport_Red.xlsx")
 
-with open(dir_path+"\Maintenance Ticket Files\ModemReport (1).csv", 'r') as f:
+with open(dir_path+"\\Maintenance Ticket Files\\ModemReport (1).csv", 'r') as f:
     for row in csv.reader(f):
         ws.append(row)
-wb.save(dir_path+"\Maintenance Ticket Files\ModemReport_RedYellow.xlsx")
+wb.save(dir_path+"\\Maintenance Ticket Files\\ModemReport_RedYellow.xlsx")
 
 # Remove unecessary columns for PEA vTDR
-wb = openpyxl.load_workbook(dir_path+"\Maintenance Ticket Files\ModemReport_RedYellow.xlsx")
+wb = openpyxl.load_workbook(dir_path+"\\Maintenance Ticket Files\\ModemReport_RedYellow.xlsx")
 ws = wb.active
 # Delete B,C,D
 ws.delete_cols(2,3)
@@ -822,24 +818,24 @@ ws.delete_cols(12,7)
 # Delete W-AG
 ws.delete_cols(13,11)
 # Save XLSX file
-wb.save(dir_path+"\Maintenance Ticket Files\PEA vTDR.xlsx")
+wb.save(dir_path+"\\Maintenance Ticket Files\\PEA vTDR.xlsx")
 
 # Remove unecessary columns for critical modems
-wb = openpyxl.load_workbook(dir_path+"\Maintenance Ticket Files\ModemReport_Red.xlsx")
+wb = openpyxl.load_workbook(dir_path+"\\Maintenance Ticket Files\\ModemReport_Red.xlsx")
 ws = wb.active
 # Delete B-U
 ws.delete_cols(2,20)
 # Delete C-M
 ws.delete_cols(3,11)
 # Save XLSX file
-wb.save(dir_path+"\Maintenance Ticket Files\PEA critical modems.xlsx")
+wb.save(dir_path+"\\Maintenance Ticket Files\\PEA critical modems.xlsx")
 
 # Delete extra files
-os.remove(dir_path+"\Maintenance Ticket Files\ModemReport.csv")
-os.remove(dir_path+"\Maintenance Ticket Files\ModemReport (1).csv")
-os.remove(dir_path+"\Maintenance Ticket Files\ModemReport_Red.xlsx")
-os.remove(dir_path+"\Maintenance Ticket Files\ModemReport_RedYellow.xlsx")
-os.remove(dir_path+"\Maintenance Ticket Files\Full_Map_Element.png")
+os.remove(dir_path+"\\Maintenance Ticket Files\\ModemReport.csv")
+os.remove(dir_path+"\\Maintenance Ticket Files\\ModemReport (1).csv")
+os.remove(dir_path+"\\Maintenance Ticket Files\\ModemReport_Red.xlsx")
+os.remove(dir_path+"\\Maintenance Ticket Files\\ModemReport_RedYellow.xlsx")
+os.remove(dir_path+"\\Maintenance Ticket Files\\Full_Map_Element.png")
 
 ###########################################################
 
@@ -1010,7 +1006,7 @@ try:
 	os.remove(Full_Waterfall_MAX_Drop)
 	os.remove(Full_Waterfall_AVG_Drop)
 
-	#### Quit Browser
+	# Quit Browser
 	quit_chrome()
 except Exception:
 	quit_chrome_exception()

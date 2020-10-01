@@ -18,7 +18,7 @@ CLS
 
 REM Run update
 python %Update_Script_Location%
-pause
+
 REM Clear screen
 CLS
 
