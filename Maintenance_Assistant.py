@@ -181,8 +181,16 @@ passwords.close
 ###########################################################
 
 # Create input to ask for HUB/Node
-layout = [  [sg.Text("Type the Mac Domain for the node you would like to investigate.")],
-			[sg.Text("For example \"7:0/0\""), sg.InputText()],
+layout = [  [sg.Text("Enter a few basic details for the drop that you would like to investigate.")],
+			[sg.Text("\n")],
+			[sg.Text("Mac Domain:")],
+			[sg.Text("For example \"7:0/0\"")],
+			[sg.InputText()],
+			[sg.Text("\n")],
+			[sg.Text("Amount of minutes last drop occured:")],
+			[sg.Text("For example entering \"30\" would be a half-hour.")],
+			[sg.InputText()],
+			[sg.Text("\n")],
             [sg.Button('Ok'), sg.Button('Cancel')] ]
 
 # Create the Window
@@ -193,10 +201,66 @@ while True:
     if event == sg.WIN_CLOSED or event == 'Cancel':
 	    window.close()
 	    sys.exit()
+	# Gather "Mac Domain" user input.
     Mac_Domain = value_list[0]
+	# Gather the time of drop from the user.
+    Time_Of_Drop = value_list[1]
+	# Convert the time of the drop to an int.
+    Time_Of_Drop_Int = int(Time_Of_Drop)
     break
 
 window.close()
+
+###########################################################
+
+if Time_Of_Drop_Int >= 0 and Time_Of_Drop_Int <= 14:
+    # Create input to ask for time of last drop
+    layout = [  [sg.Text("The drop has to be atleast 15 minutes ago.")],
+                [sg.Text("Please re-run the script after 15 minutes have passed.")],
+                [sg.Button('Exit')] ]
+
+    # Create the Window
+    window = sg.Window('Input Error!', layout)
+    # Event Loop to process "events" and get the "values" of the inputs
+    while True:
+        event, value_list = window.read()
+        if event == sg.WIN_CLOSED or event == 'Exit':
+            window.close()
+            sys.exit()
+elif Time_Of_Drop_Int >= 15 and Time_Of_Drop_Int <= 29:
+    Viewpoint_TimeFrame_Count = 0
+elif Time_Of_Drop_Int >= 30 and Time_Of_Drop_Int <= 44:
+    Viewpoint_TimeFrame_Count = 1
+elif Time_Of_Drop_Int >= 45 and Time_Of_Drop_Int <= 59:
+    Viewpoint_TimeFrame_Count = 2
+elif Time_Of_Drop_Int >= 60 and Time_Of_Drop_Int <= 74:
+    Viewpoint_TimeFrame_Count = 3
+elif Time_Of_Drop_Int >= 75 and Time_Of_Drop_Int <= 89:
+    Viewpoint_TimeFrame_Count = 4
+elif Time_Of_Drop_Int >= 90 and Time_Of_Drop_Int <= 104:
+    Viewpoint_TimeFrame_Count = 5
+elif Time_Of_Drop_Int >= 105 and Time_Of_Drop_Int <= 119:
+    Viewpoint_TimeFrame_Count = 6
+elif Time_Of_Drop_Int >= 120 and Time_Of_Drop_Int <= 134:
+    Viewpoint_TimeFrame_Count = 7
+elif Time_Of_Drop_Int >= 135 and Time_Of_Drop_Int <= 149:
+    Viewpoint_TimeFrame_Count = 8
+elif Time_Of_Drop_Int >= 150 and Time_Of_Drop_Int <= 165:
+    Viewpoint_TimeFrame_Count = 9
+else:
+    # Create input to ask for time of last drop
+    layout = [  [sg.Text("The drop was too long ago.")],
+                [sg.Text("The script can't go back that far.")],
+                [sg.Button('Exit')] ]
+
+    # Create the Window
+    window = sg.Window('Input Error!', layout)
+    # Event Loop to process "events" and get the "values" of the inputs
+    while True:
+        event, value_list = window.read()
+        if event == sg.WIN_CLOSED or event == 'Exit':
+            window.close()
+            sys.exit()
 
 ###########################################################
 
@@ -585,7 +649,7 @@ Mac_Domain_Split_Third_Number_String = out_str.join(Mac_Domain_Split_Third_Numbe
 chromeOptions = webdriver.ChromeOptions()
 #chromeOptions.add_argument("--window-size=1600,600")
 chromedriver = dir_path+"/Tools/Chrome_Driver/chromedriver.exe"
-browser = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
+browser = webdriver.Chrome(executable_path=chromedriver, options=chromeOptions)
 # First Tab
 browser.get(("https://harmonicinc.okta.com/login/login.htm?fromURI=/oauth2/v1/authorize/redirect?okta_key=3ZRZV6ACBLrdKnZEm6VZM1vShPqJ5nwPTs7cnMeLObc"))
 # Log into Grafana
@@ -653,6 +717,14 @@ Display_Dropdown.click()
 # Click "Spectrum"
 Spectrum_Dropdown_Option = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[2]/div[1]/div/div[2]/div/ul[3]/ul[1]/li[2]/select/option[1]")))
 Spectrum_Dropdown_Option.click()
+# Click "Back button for 15 minute increments"
+i = 0
+while i < Viewpoint_TimeFrame_Count:
+    Back_15_Minute_Button = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div[2]/ul/li[2]")))
+    Back_15_Minute_Button.click()
+    i += 1
+
+time.sleep(Viewpoint_TimeFrame_Count)
 # Close First tab
 browser.switch_to.window(browser.window_handles[0])
 browser.close()
@@ -676,6 +748,7 @@ while True:
     break
 
 window.close()
+quit_chrome()
 
 ###########################################################
 
@@ -685,7 +758,7 @@ prefs = {"download.default_directory" : dir_path+"\\Maintenance Ticket Files\\"}
 chromeOptions.add_experimental_option("prefs",prefs)
 #chromeOptions.add_argument("--window-size=1600,600")
 chromedriver = dir_path+"/Tools/Chrome_Driver/chromedriver.exe"
-browser = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
+browser = webdriver.Chrome(executable_path=chromedriver, options=chromeOptions)
 # Open PEA in Chrome.
 browser.get(("https://buckeye.pea.zcorum.com/pnm4/index.php/detailView"))
 
@@ -708,13 +781,13 @@ try:
 	
 	# Click the suggested Node
 	# Add extra time for page to load
-	time.sleep(1)
-	suggestButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[2]/div/select/option[1]")))
+	time.sleep(5)
+	suggestButton = WebDriverWait(browser, 20).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[2]/div/select/option[1]")))
 	suggestButton.click()
 	
 	# Click the search button
 	# Add extra time for page to load
-	time.sleep(1)
+	time.sleep(2)
 	searchButton = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[2]/button")))
 	searchButton.click()
 	
@@ -845,7 +918,7 @@ prefs = {"download.default_directory" : dir_path+"\Maintenance Ticket Files\\"}
 chromeOptions.add_experimental_option("prefs",prefs)
 #chromeOptions.add_argument("--window-size=1600,600")
 chromedriver = dir_path+"/Tools/Chrome_Driver/chromedriver.exe"
-browser = webdriver.Chrome(executable_path=chromedriver, chrome_options=chromeOptions)
+browser = webdriver.Chrome(executable_path=chromedriver, options=chromeOptions)
 # Open Viewpoint in Chrome.
 browser.get(("http://10.6.10.12/ViewPoint/site/Site/Login"))
 
@@ -901,8 +974,13 @@ try:
 	Spectrum_Dropdown_Option.click()
 
 	# Click "Back button for 15 minute increments"
-	Back_15_Minute_Button = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div[2]/ul/li[2]")))
-	Back_15_Minute_Button.click()
+	i = 0
+	while i < Viewpoint_TimeFrame_Count:
+	    Back_15_Minute_Button = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div[1]/div[2]/div[4]/div[1]/div/div/div/div[2]/ul/li[2]")))
+	    Back_15_Minute_Button.click()
+	    i += 1
+
+	time.sleep(Viewpoint_TimeFrame_Count)
 
 	# Take screenshot of the average spectrum
 	# Add extra time for canvas to load

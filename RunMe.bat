@@ -24,3 +24,5 @@ CLS
 
 REM Run assistant
 python %Maintenance_Assistant_Location%
+
+pause
