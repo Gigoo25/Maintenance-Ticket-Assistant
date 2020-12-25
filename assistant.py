@@ -3,6 +3,8 @@ import os
 import time
 import sys
 import tkinter as tk
+import wget
+from shutil import copyfile
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -358,10 +360,12 @@ def user_input_conversion():
         elif Time_Of_Drop_Int == 120:
             Viewpoint_TimeFrame_Count = 7
 
+        testingggg = "ALX 1P1"
+        
         nodes = {
             # Alexis
                 # Cluster 1
-                    "7:0/0": {'shrt_hub': 'ALX 1P1', 'clstr': 'COS-1', 'viwp_long': 'Alexis'},
+                    "7:0/0": {'shrt_hub': testingggg, 'clstr': 'COS-1', 'viwp_long': 'Alexis'},
                     "7:0/1": {'shrt_hub': 'ALX 1P4', 'clstr': 'COS-1', 'viwp_long': 'Alexis'},
                     "7:0/2": {'shrt_hub': 'ALX 2', 'clstr': 'COS-1', 'viwp_long': 'Alexis'},
                     "7:0/3": {'shrt_hub': 'ALX 3P1', 'clstr': 'COS-1', 'viwp_long': 'Alexis'},
@@ -460,12 +464,15 @@ def grab_data():
         
         # Open chrome
         global browser
+        # Set chromedriver variables
         chromeOptions = webdriver.ChromeOptions()
         chromeOptions.add_argument("--window-size=1,1")
         chromedriver = Root+"/Backend/Chrome_Driver/chromedriver.exe"
         browser = webdriver.Chrome(executable_path=chromedriver, options=chromeOptions)
+
         # Set window outside of view
         browser.set_window_position(-2000,-2000)
+
         # Set window size to normal
         browser.set_window_size(1544, 1368)
 
@@ -582,19 +589,21 @@ def grab_data():
 
         time.sleep(Viewpoint_TimeFrame_Count)
 
-        # Set window back into view
-        browser.set_window_position(593,60)
-
         # Close First tab
         browser.switch_to.window(browser.window_handles[0])
         browser.close()
 
-        # Open Excel file
-        xl_app = xw.App(visible=True, add_book=False)
-        wb = xl_app.books.open("\\\\taz\\cabout$\\Network Surveillance\\Reports On Demand\\RF Impairments\\RF Impairment Watchlist.xlsm")
-
+        # Switch to First tab again
+        browser.switch_to.window(browser.window_handles[0])
+    
         # Update progress bar
         progress_bar.UpdateBar(5, 5)
+
+        # Set window back into view
+        browser.set_window_position(593,60)
+        
+        # Open Excel file
+        xw.App(visible=True, add_book=False).books.open("\\\\taz\\cabout$\\Network Surveillance\\Reports On Demand\\RF Impairments\\RF Impairment Watchlist.xlsm")
     
         # Close The Window
         window.Close()
@@ -642,6 +651,48 @@ def completion_window():
             break
     window.close()
 
+def version_check():
+    # Set repo variables
+    REPO_URL = "https://raw.githubusercontent.com/Gigoo25/Maintenance-Ticket-Assistant/test/"
+
+    # Set tool verison check variables
+    CURRENT_VERSION = "1.0"
+    ONLINE_VERSION = "unidentified"
+
+    # Delete version check file if found
+    if os.path.isfile(Root+"\\version.txt") and os.access(Root+"\\version.txt", os.R_OK):
+        os.remove(Root+"\\version.txt")
+
+    # Download version to compare from online
+    wget.download(REPO_URL+"version.txt", out=Root+"\\version.txt")
+
+    # Check for version check file
+    if os.path.isfile(Root+"\\version.txt"):
+        # Open version check file
+        ONLINE_VERSION_FILE = open(Root+"\\version.txt", "r")
+        # Set online version
+        lines=ONLINE_VERSION_FILE.readlines()
+        ONLINE_VERSION=lines[0]
+        # Close online file
+        ONLINE_VERSION_FILE.close
+    else:
+        print("\n")
+        print("Version check file was not found.")
+        print("Skipping...")
+        time.sleep(10)
+        sys.exit()
+
+    # Convert version number to floats for correct comparison
+    CURRENT_VERSION_FLT = float(CURRENT_VERSION)
+    ONLINE_VERSION_FLT = float(ONLINE_VERSION)
+
+    # Compare versions and set variables 
+    if ONLINE_VERSION_FLT > CURRENT_VERSION_FLT:
+        update_window()
+    else:
+        print("\n")
+        print("No update was found.")
+        
 def update_window():
     # Themes & Colors
     sg.theme('DarkGrey4')
@@ -681,7 +732,7 @@ def update_window():
             # Browser Variables
             chromedriver = Root+"/Backend/Chrome_Driver/chromedriver.exe"
             browser = webdriver.Chrome(executable_path=chromedriver)
-            browser.get(("https://duck.com"))
+            browser.get(("https://github.com/Gigoo25/Maintenance-Ticket-Assistant/releases"))
 
 def progress():
     # Themes & Colors
@@ -742,8 +793,6 @@ def progress():
     #This will Close The Window
     window.Close()
 
-update_window()
-time.sleep(500000)
 ### Execute functions defined above
 ## Prep functions
 del_old_files()
