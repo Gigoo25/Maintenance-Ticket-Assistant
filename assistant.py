@@ -8,17 +8,21 @@ import sys
 import xlwings as xw
 import _thread
 import threading
+import re
+from webdriver_manager.chrome import ChromeDriverManager
 from threading import Thread
 from shutil import copyfile
 from selenium import webdriver
+import chromedriver_autoinstaller
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys 
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.action_chains import ActionChains
 from subprocess import CREATE_NO_WINDOW
 from multiprocessing import Process
-
 
 ## Set Variables
 # Set theme for the windows.
@@ -44,7 +48,7 @@ def error_window():
     error_img = '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'
 
     # Header block
-    top_banner = [[sg.Image(data=error_img, background_color=DARK_COLOR), sg.Text('Error - Unknown', font=('Calibri', 20), background_color=DARK_COLOR)]]
+    top_banner = [[sg.Image(data=error_img, background_color=DARK_COLOR), sg.Text('Error', font=('Calibri', 20), background_color=DARK_COLOR)]]
 
     # Main block
     body = [
@@ -240,14 +244,15 @@ def check_credentials():
                     [sg.Text('The credentials file is missing or not readable.', font=('Calibri', 13), background_color=LIGHT_COLOR, pad=((0,0),(5,0)))],
                     [sg.Text('Please enter your credentials below to generate a new file.', font=('Calibri', 13), background_color=LIGHT_COLOR, pad=((0,0),(0,15)))],
                     [sg.Text("Pre-Equalization Analyzer", font=("Calibri", 20), background_color=LIGHT_COLOR, pad=((0,0),(5,2)))],
-                    [sg.Text("Username:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((4,0),(0,0))), sg.Text("Password:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((54,0),(0,0)))],
-                    [sg.InputText('', key='pea_usr', enable_events=True, font=("Calibri", 12), size=(13, 1)), sg.InputText('', key='pea_pass', enable_events=True, font=("Calibri", 12), size=(13, 1))],
+                    [sg.Text("Username:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((4,0),(0,0))), sg.Text("Password:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((208,0),(0,0)))],
+                    [sg.InputText('', key='pea_usr', enable_events=True, font=("Calibri", 12), size=(32, 1)), sg.InputText('', password_char="*", key='pea_pass', enable_events=True, font=("Calibri", 12), size=(32, 1))],
                     [sg.Text("Viewpoint", font=("Calibri", 20), background_color=LIGHT_COLOR, pad=((0,0),(5,2)))],
-                    [sg.Text("Username:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((4,0),(0,0))), sg.Text("Password:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((54,0),(0,0)))],
-                    [sg.InputText('', key='viw_usr', enable_events=True, font=("Calibri", 12), size=(13, 1)), sg.InputText('', key='viw_pass', enable_events=True, font=("Calibri", 12), size=(13, 1))],
+                    [sg.Text("Username:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((4,0),(0,0))), sg.Text("Password:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((208,0),(0,0)))],
+                    [sg.InputText('', key='viw_usr', enable_events=True, font=("Calibri", 12), size=(32, 1)), sg.InputText('', password_char="*", key='viw_pass', enable_events=True, font=("Calibri", 12), size=(32, 1))],
                     [sg.Text("Grafana", font=("Calibri", 20), background_color=LIGHT_COLOR, pad=((0,0),(5,2)))],
-                    [sg.Text("Username:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((4,0),(0,0))), sg.Text("Password:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((54,0),(0,0)))],
-                    [sg.InputText('', key='grf_usr', enable_events=True, font=("Calibri", 12), size=(13, 1)), sg.InputText('', key='grf_pass', enable_events=True, font=("Calibri", 12), size=(13, 1))]
+                    [sg.Text("Username:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((4,0),(0,0))), sg.Text("Password:", font=("Calibri", 10), background_color=LIGHT_COLOR, pad=((208,0),(0,0)))],
+                    [sg.InputText('', key='grf_usr', enable_events=True, font=("Calibri", 12), size=(32, 1)), sg.InputText('', password_char="*", key='grf_pass', enable_events=True, font=("Calibri", 12), size=(32, 1))],
+                    [sg.Text(background_color=LIGHT_COLOR, pad=((4,0),(4,0)), text_color=('red'), font=("Calibri", 12), size=(50,1), key='-OUTPUT-')]
                 ]
 
         # Define Layout
@@ -274,19 +279,39 @@ def check_credentials():
                 elem.Click()
             # When "Ok" button is pressed
             if event == 'Ok':
-                # Gather variables from user input
-                line2 = values['pea_usr']
-                line4 = values['pea_pass']
-                line6 = values['viw_usr']
-                line8 = values['viw_pass']
-                line10 = values['grf_usr']
-                line12 = values['grf_pass']
-                # Write to credentials file
-                credentials = open(PATH, "w+")
-                credentials.write(line1 + "\n" + line2 + "\n" + line3 + "\n" + line4 + "\n" + line5 + "\n" + line6 + "\n" + line7 + "\n" + line8 + "\n" + line9 + "\n" + line10 + "\n" + line11 + "\n" + line12)
-                credentials.close()
-                # Continue
-                break
+                # Check to make sure something is entered in all input fields
+                if len(values['pea_usr']) == 0:
+                    # Output error
+                    window['-OUTPUT-'].update("Missing PEA Username.")
+                elif len(values['pea_pass']) == 0:
+                    # Output error
+                    window['-OUTPUT-'].update("Missing PEA Password.")
+                elif len(values['viw_usr']) == 0:
+                    # Output error
+                    window['-OUTPUT-'].update("Missing Viewpoint Username.")
+                elif len(values['viw_pass']) == 0:
+                    # Output error
+                    window['-OUTPUT-'].update("Missing Viewpoint Password.")
+                elif len(values['grf_usr']) == 0:
+                    # Output error
+                    window['-OUTPUT-'].update("Missing Grafana Username.")
+                elif len(values['grf_pass']) == 0:
+                    # Output error
+                    window['-OUTPUT-'].update("Missing Grafana Password.")
+                else:
+                    # Gather variables from user input
+                    line2 = values['pea_usr']
+                    line4 = values['pea_pass']
+                    line6 = values['viw_usr']
+                    line8 = values['viw_pass']
+                    line10 = values['grf_usr']
+                    line12 = values['grf_pass']
+                    # Write to credentials file
+                    credentials = open(PATH, "w+")
+                    credentials.write(line1 + "\n" + line2 + "\n" + line3 + "\n" + line4 + "\n" + line5 + "\n" + line6 + "\n" + line7 + "\n" + line8 + "\n" + line9 + "\n" + line10 + "\n" + line11 + "\n" + line12)
+                    credentials.close()
+                    # Continue
+                    break
 
         window.close()
 
@@ -392,18 +417,39 @@ def update_window():
             sys.exit()
         if event == 'Download':
             window.close()
-            # Browser Variables
-            chromedriver = Root+"/Backend/chromedriver.exe"
-            browser = webdriver.Chrome(executable_path=chromedriver)
+            # Set chromedriver location
+            service = Service(Root+"/Backend/chromedriver.exe")
+            # Set chromediver to not make an additional window
+            service.creationflags = CREATE_NO_WINDOW
+            # Open chromedriver
+            browser = webdriver.Chrome(service=service)
+            # Open release webpage
             browser.get(("https://github.com/Gigoo25/Maintenance-Ticket-Assistant/releases"))
+
+def open_browser_background():
+    global browser
+    # Set chromedriver variables
+    chromeOptions = webdriver.ChromeOptions()
+    # Set window size to normal
+    chromeOptions.add_argument("--window-size=1544,1368")
+    # Set window outside of view
+    chromeOptions.add_argument('--window-position=-2000,-2000')
+    # Set chromedriver location
+    service = Service(Root+"/Backend/chromedriver.exe")
+    #service = Service(ChromeDriverManager().install())
+    # Set chromediver to not make an additional window
+    service.creationflags = CREATE_NO_WINDOW
+    # Open chromedriver
+    browser = webdriver.Chrome(service=service, options=chromeOptions)
 
 ## Analyze Functions
 def main_window():
     try:
+        def collapse(layout, key, visible):
+            return sg.pin(sg.Column(layout, key=key, visible=visible, pad=(0,0), size=(549,70), background_color=LIGHT_COLOR))
+            
         # Themes & Colors
         sg.theme('DarkGrey4')
-        DARK_COLOR = '#1e1e1e'
-        LIGHT_COLOR = '#333333'
         DARK_COLOR = '#1e1e1e'
         LIGHT_COLOR = '#333333'
 
@@ -420,47 +466,85 @@ def main_window():
         # Main block
         body = [
                     [sg.Text('Enter a few basic details for the drop that you would like to investigate.', font=('Calibri', 13), background_color=LIGHT_COLOR, pad=((5,0),(0,15)))],
-                    [sg.Text("Mac Domain:", font=("Calibri", 12), background_color=LIGHT_COLOR, pad=((5,0),(0,0))), sg.InputText('', enable_events=True,  key='-INPUT-', tooltip='For example \"7:0/0\"', font=("Calibri", 12), size=(50,1))],
+                    [sg.Text("Mac Domain:", font=("Calibri", 12), background_color=LIGHT_COLOR, pad=((5,0),(0,0))), sg.InputText('', enable_events=True,  key='-INPUT-', tooltip='For example \"7:0/0\"', font=("Calibri", 12), size=(50,1))],         
+                    [sg.Text(background_color=LIGHT_COLOR, pad=((97,0),(0,0)), text_color=('red'), font=("Calibri", 12), size=(50,1), key='-OUTPUT-')],
+                    [sg.Text("Event Type:", font=("Calibri", 12), background_color=LIGHT_COLOR, pad=((5,0),(0,0))), sg.Radio('Maintenance Ticket', "RADIO1", key="-RADIO1-", enable_events=True, background_color=LIGHT_COLOR, font=("Calibri", 12), default=True), sg.Radio('Node Outage', "RADIO1", key="-RADIO2-", enable_events=True, background_color=LIGHT_COLOR, font=("Calibri", 12)), sg.Radio('HUB Outage', "RADIO1", key="-RADIO3-", enable_events=True, background_color=LIGHT_COLOR, font=("Calibri", 12))],
+                ]
+
+        section1 = [
                     [sg.Text("Minutes since drop:", font=("Calibri", 12), background_color=LIGHT_COLOR, pad=((5,0),(17,0))), sg.Slider(range=(15, 120),  key='-SLIDE-', font=("Calibri", 12), orientation='h', size=(40, 20), default_value=15, background_color=LIGHT_COLOR)]
                 ]
 
         # Define Layout
         layout = [
                     [sg.Column(top_banner, size=(550, 60), background_color=DARK_COLOR)],
-                    [sg.Column([[sg.Column(body, size=(550,150), background_color=LIGHT_COLOR)]], background_color=DARK_COLOR)],
-                    [sg.Button('Ok', size=(32,2), pad=((10,22),(10,10)), button_color=('white',LIGHT_COLOR), font=('Calibri', 12)), sg.Button('Cancel', size=(32,2), pad=((0,0),(10,10)), button_color=('white',LIGHT_COLOR), font=('Calibri', 12))]
+                    [sg.Column([[sg.Column(body, size=(550,130), pad=((5,0),(0,0)), background_color=LIGHT_COLOR)]], pad=((0,0),(0,0)), background_color=DARK_COLOR)],
+                    [sg.Column([[collapse(section1, 'sec_1', True)]], pad=((5,0),(0,0)), background_color=DARK_COLOR)],
+                    [sg.Button('Ok', size=(32,2), pad=((5,22),(10,5)), button_color=('white',LIGHT_COLOR), font=('Calibri', 12)), sg.Button('Cancel', size=(32,2), pad=((0,0),(10,5)), button_color=('white',LIGHT_COLOR), font=('Calibri', 12))]
                 ]
 
         # Create window
         window = sg.Window('MaintenanceBoi', layout, return_keyboard_events=True, background_color=DARK_COLOR, keep_on_top=True)
 
+        # Pre-Load browser
+        open_browser_background()
+
         # Event Loop to process "events" and get the "values" of the inputs
         while True:
             event, values = window.read()
-            # When "Cancel" button is pressed
-            if event == sg.WIN_CLOSED or event == 'Cancel':
+            # When "Maintenance ticket" is selected unhide the "Minutes since drop" section
+            if event == '-RADIO1-':
+                window['sec_1'].update(visible=True)
+            # When any other radio option is selected hide the "Minutes since drop" section
+            elif event == '-RADIO2-' or event == '-RADIO3-':
+                window['sec_1'].update(visible=False)
+            # When "Cancel" button is pressed close chrome, window & exit script
+            elif event == sg.WIN_CLOSED or event == 'Cancel':
                 window.close()
+                quit_chrome()
                 sys.exit()
             # Check for ENTER key & input
-            if event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2) and len(values['-INPUT-']) and values['-INPUT-'][-1] not in (''):
+            elif event in ('\r', QT_ENTER_KEY1, QT_ENTER_KEY2) and len(values['-INPUT-']) and values['-INPUT-'][-1] not in (''):
                 # Find the ok button & click it
                 elem = window.find_element("Ok")
                 elem.Click()
-            # When "Ok" button is pressed
-            if event == 'Ok' and len(values['-INPUT-']) and values['-INPUT-'][-1] not in (''):
-                # Set variables as global
-                global Mac_Domain
-                global Time_Of_Drop_Int
-                # Gather "Mac Domain" user input.
-                Mac_Domain = values['-INPUT-']
-                # Gather the time of drop from the user.
-                Time_Of_Drop = values['-SLIDE-']
-                # Convert the time of the drop to an int.
-                Time_Of_Drop_Int = int(Time_Of_Drop)
-                # Continue
-                break
-            # Check if input is "0123456789/:"
-            if len(values['-INPUT-']) and values['-INPUT-'][-1] not in ('0123456789/:'):
+            # When "Ok" button is pressed validate input against a regex
+            elif event == 'Ok' and len(values['-INPUT-']) and values['-INPUT-'][-1] not in (''):
+                if re.match(r"(^[0-9]{2}|^[0-9]{1}):([0-9]{2}|[0-9]{1})[\/]([0-9]{2}|[0-9]{1})", values['-INPUT-']):
+                    # Set variables as global
+                    global mac_domain
+                    global time_of_drop_int
+                    global event_type
+                    # Gather "Mac Domain" user input.
+                    mac_domain = values['-INPUT-']
+                    # Gather the time of drop from the user.
+                    Time_Of_Drop = values['-SLIDE-']
+                    # Convert the time of the drop to an int.
+                    time_of_drop_int = int(Time_Of_Drop)
+                    if values["-RADIO1-"] == True:
+                        # Set event type
+                        event_type = "maintenance"
+                        # Continue
+                        break
+                    elif values["-RADIO2-"] == True:
+                        # Set event type
+                        event_type = "node_outage"
+                        # Continue
+                        break
+                    elif values["-RADIO3-"] == True:
+                        # Set event type
+                        event_type = "hub_outage"
+                        # Continue
+                        break
+                else:
+                    window['-INPUT-'].update(values['-INPUT-'][:-8])
+                    window['-OUTPUT-'].update("'" + values['-INPUT-'] + "' is not a valid input!")
+            # Only allow the following characters "0123456789/:"
+            elif len(values['-INPUT-']) and values['-INPUT-'][-1] not in ('0123456789/:'):
+                # Delete the last character 
+                window['-INPUT-'].update(values['-INPUT-'][:-1])
+            # Limit input length
+            elif len(values['-INPUT-']) > 8:
                 # Delete the last character 
                 window['-INPUT-'].update(values['-INPUT-'][:-1])
 
@@ -482,26 +566,26 @@ def user_input_conversion():
         global Short_HUB_Input
         global Cluster
         global Short_HUB_Split_String
-        global Mac_Domain_Split_First_Number_String
-        global Mac_Domain_Split_Second_Number_String
-        global Mac_Domain_Split_Third_Number_String
+        global mac_domain_Split_First_Number_String
+        global mac_domain_Split_Second_Number_String
+        global mac_domain_Split_Third_Number_String
 
         # Set the amount of clicks for Viewpoint
-        if Time_Of_Drop_Int >= 15 and Time_Of_Drop_Int <= 29:
+        if time_of_drop_int >= 15 and time_of_drop_int <= 29:
             Viewpoint_TimeFrame_Count = 0
-        elif Time_Of_Drop_Int >= 30 and Time_Of_Drop_Int <= 44:
+        elif time_of_drop_int >= 30 and time_of_drop_int <= 44:
             Viewpoint_TimeFrame_Count = 1
-        elif Time_Of_Drop_Int >= 45 and Time_Of_Drop_Int <= 59:
+        elif time_of_drop_int >= 45 and time_of_drop_int <= 59:
             Viewpoint_TimeFrame_Count = 2
-        elif Time_Of_Drop_Int >= 60 and Time_Of_Drop_Int <= 74:
+        elif time_of_drop_int >= 60 and time_of_drop_int <= 74:
             Viewpoint_TimeFrame_Count = 3
-        elif Time_Of_Drop_Int >= 75 and Time_Of_Drop_Int <= 89:
+        elif time_of_drop_int >= 75 and time_of_drop_int <= 89:
             Viewpoint_TimeFrame_Count = 4
-        elif Time_Of_Drop_Int >= 90 and Time_Of_Drop_Int <= 104:
+        elif time_of_drop_int >= 90 and time_of_drop_int <= 104:
             Viewpoint_TimeFrame_Count = 5
-        elif Time_Of_Drop_Int >= 105 and Time_Of_Drop_Int <= 119:
+        elif time_of_drop_int >= 105 and time_of_drop_int <= 119:
             Viewpoint_TimeFrame_Count = 6
-        elif Time_Of_Drop_Int == 120:
+        elif time_of_drop_int == 120:
             Viewpoint_TimeFrame_Count = 7
         
         nodes = {
@@ -972,8 +1056,8 @@ def user_input_conversion():
                 "4:2/2": {'shrt_hub': 'MAU 23 ', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
                 "4:2/3": {'shrt_hub': 'MAU 24 Dana HQ ', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
                 "4:2/4": {'shrt_hub': 'MAU 201RFoG', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
-                "4:2/5": {'shrt_hub': 'MAU 202A RFoG  ', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
-                "4:2/6": {'shrt_hub': 'MAU 202B RFoG  ', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
+                "4:2/5": {'shrt_hub': 'MAU 202A RFoG', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
+                "4:2/6": {'shrt_hub': 'MAU 202B RFoG', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
                 "4:2/7": {'shrt_hub': 'MAU 21P1', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
                 "4:2/8": {'shrt_hub': 'MAU 21P3', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
                 "4:2/9": {'shrt_hub': 'MAU 21P4', 'clstr': 'MAU-COS-1', 'viwp_long': 'Maumee', 'viwp_short': 'MAU'},
@@ -1169,9 +1253,9 @@ def user_input_conversion():
                 "5:3/0": {'shrt_hub': 'PER 40 ', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
                 "5:3/1": {'shrt_hub': 'PER 41 ', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
                 "5:3/2": {'shrt_hub': 'PER OI HQ', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
-                "5:3/3": {'shrt_hub': 'PER Hotel 860  ', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
-                "5:3/4": {'shrt_hub': 'PER 201A RFoG  ', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
-                "5:3/5": {'shrt_hub': 'PER 201B RFoG  ', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
+                "5:3/3": {'shrt_hub': 'PER Hotel 860', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
+                "5:3/4": {'shrt_hub': 'PER 201A RFoG', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
+                "5:3/5": {'shrt_hub': 'PER 201B RFoG', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
                 "5:3/6": {'shrt_hub': 'PER 1P3', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
                 "5:3/7": {'shrt_hub': 'PER 1P6', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
                 "5:3/8": {'shrt_hub': 'PER 201', 'clstr': 'PER-COS-1', 'viwp_long': 'Perrysburg', 'viwp_short': 'PER'},
@@ -1278,10 +1362,10 @@ def user_input_conversion():
                 "6:4/9": {'shrt_hub': 'SYL 40 ', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
                 "6:4/10": {'shrt_hub': 'SYL 42', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
                 "6:4/11": {'shrt_hub': 'SYL 33P4', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
-                "6:5/0": {'shrt_hub': 'SYL 201A RFoG  ', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
-                "6:5/1": {'shrt_hub': 'SYL 201B RFoG  ', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
-                "6:5/2": {'shrt_hub': 'SYL 202A RFoG  ', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
-                "6:5/3": {'shrt_hub': 'SYL 202B RFoG  ', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
+                "6:5/0": {'shrt_hub': 'SYL 201A RFoG', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
+                "6:5/1": {'shrt_hub': 'SYL 201B RFoG', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
+                "6:5/2": {'shrt_hub': 'SYL 202A RFoG', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
+                "6:5/3": {'shrt_hub': 'SYL 202B RFoG', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
                 "6:5/4": {'shrt_hub': 'SYL 27P3', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
                 "6:5/5": {'shrt_hub': 'SYL 39P1', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
                 "6:5/6": {'shrt_hub': 'SYL 39P4', 'clstr': 'SYL-COS-2', 'viwp_long': 'Sylvania', 'viwp_short': 'SYL'},
@@ -1351,10 +1435,10 @@ def user_input_conversion():
                 }
         
         # Set variables according to dictionary entry & user input
-        Short_HUB_Input = nodes[Mac_Domain]['shrt_hub']
-        Cluster = nodes[Mac_Domain]['clstr']
-        Viewpoint_Full_HUB = nodes[Mac_Domain]['viwp_long']
-        Viewpoint_Short_HUB = nodes[Mac_Domain]['viwp_short']
+        Short_HUB_Input = nodes[mac_domain]['shrt_hub']
+        Cluster = nodes[mac_domain]['clstr']
+        Viewpoint_Full_HUB = nodes[mac_domain]['viwp_long']
+        Viewpoint_Short_HUB = nodes[mac_domain]['viwp_short']
 
         # Set an an empty var to set other variables as strings later
         out_str = ""
@@ -1382,19 +1466,19 @@ def user_input_conversion():
         PEA_Short_HUB_Node = "Node "+Short_HUB_Input
 
         # Convert the "/" in the input to a ":" for easier splitting later (7:0:0)
-        Mac_Domain_Corrected = Mac_Domain.replace("/", ":")
+        mac_domain_Corrected = mac_domain.replace("/", ":")
         # Split the Mac Domain into individual numbers ('7', '0', '0')
-        Mac_Domain_Split = Mac_Domain_Corrected.split(":")
+        mac_domain_Split = mac_domain_Corrected.split(":")
 
         # Place first split number into variables for manipulation & convert to string ('7')
-        Mac_Domain_Split_First_Number = [Mac_Domain_Split[0]]
-        Mac_Domain_Split_First_Number_String = out_str.join(Mac_Domain_Split_First_Number)
+        mac_domain_Split_First_Number = [mac_domain_Split[0]]
+        mac_domain_Split_First_Number_String = out_str.join(mac_domain_Split_First_Number)
         # Place second split number into variables for manipulation & convert to string ('0')
-        Mac_Domain_Split_Second_Number = [Mac_Domain_Split[1]]
-        Mac_Domain_Split_Second_Number_String = out_str.join(Mac_Domain_Split_Second_Number)
+        mac_domain_Split_Second_Number = [mac_domain_Split[1]]
+        mac_domain_Split_Second_Number_String = out_str.join(mac_domain_Split_Second_Number)
         # Place third split number into variables for manipulation & convert to string ('0')
-        Mac_Domain_Split_Third_Number = [Mac_Domain_Split[2]]
-        Mac_Domain_Split_Third_Number_String = out_str.join(Mac_Domain_Split_Third_Number)
+        mac_domain_Split_Third_Number = [mac_domain_Split[2]]
+        mac_domain_Split_Third_Number_String = out_str.join(mac_domain_Split_Third_Number)
     except Exception as e:
         # Export exception to variable
         global str_exception
@@ -1402,7 +1486,7 @@ def user_input_conversion():
         # Run functions
         error_window()
 
-def grab_data():
+def determine_maintenance():
     try:
         # Themes & Colors
         sg.theme('DarkGrey4')
@@ -1437,160 +1521,363 @@ def grab_data():
         # Set gloval var
         global browser
 
-        # Set chromedriver variables
-        chromeOptions = webdriver.ChromeOptions()
-        chromeOptions.add_argument("--window-size=1,1")
-        service = Service(Root+"/Backend/chromedriver.exe")
-        service.creationflags = CREATE_NO_WINDOW
+        # Set link vars
+        mac_domain_counter = "https://buckeye.cableos-operations.com/d/core-mac-domain-counters/core-mac-domain-counters?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-mdName=Md"+mac_domain_Split_First_Number_String+":"+mac_domain_Split_Second_Number_String+"%2F"+mac_domain_Split_Third_Number_String+".0"
+        cm_states = "https://buckeye.cableos-operations.com/d/core-cm-states-per-mac-domain/core-cm-states-per-mac-domain?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-mdName=Md"+mac_domain_Split_First_Number_String+":"+mac_domain_Split_Second_Number_String+"%2F"+mac_domain_Split_Third_Number_String+".0"
+        core_upstreams = "https://buckeye.cableos-operations.com/d/core-upstream-metrics-mh/core-upstream-metrics?orgId=1&refresh=1m&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-us_rf_port=Us"+mac_domain_Split_First_Number_String+":"+mac_domain_Split_Second_Number_String+"%2F"+mac_domain_Split_Third_Number_String
+        viewpoint_home = "http://10.6.10.12/ViewPoint/site/Site/Login"
 
-        browser = webdriver.Chrome(service=service, options=chromeOptions)
+        # Open first link
+        browser.get((mac_domain_counter))
 
-        # Set window outside of view
-        #browser.set_window_position(-2000,-2000)
-
-        # Set window size to normal
-        browser.set_window_size(1544, 1368)
-
-        # First Tab
-        browser.get(("https://harmonicinc.okta.com/login/login.htm?fromURI=/oauth2/v1/authorize/redirect?okta_key=3ZRZV6ACBLrdKnZEm6VZM1vShPqJ5nwPTs7cnMeLObc"))
-        
         ## Log into Grafana
         # Type username
-        WebDriverWait(browser, 20).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-username"]'))).send_keys(Grafana_username)
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-username"]'))).send_keys(Grafana_username)
 
         # Type password
-        WebDriverWait(browser, 20).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-password"]'))).send_keys(Grafana_password)
-        time.sleep(1)
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-password"]'))).send_keys(Grafana_password)
+        time.sleep(.5)
 
         # Click login
-        WebDriverWait(browser, 20).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-submit"]'))).click()
-
-        # Wait for error page to show
-        WebDriverWait(browser, 20).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="content"]/div[2]')))
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-submit"]'))).click()
 
         # Update progress bar
         progress_bar.UpdateBar(1, 5)
 
-        # Set link vars
-        mac_domain_counter = "https://buckeye.cableos-operations.com/d/core-mac-domain-counters/core-mac-domain-counters?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-mdName=Md"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String+".0"
-        cm_states = "https://buckeye.cableos-operations.com/d/core-cm-states-per-mac-domain/core-cm-states-per-mac-domain?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-mdName=Md"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String+".0"
-        core_upstreams = "https://buckeye.cableos-operations.com/d/core-upstream-metrics-mh/core-upstream-metrics?orgId=1&refresh=1m&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-us_rf_port=Us"+Mac_Domain_Split_First_Number_String+":"+Mac_Domain_Split_Second_Number_String+"%2F"+Mac_Domain_Split_Third_Number_String
-        viewpoint_home = "http://10.6.10.12/ViewPoint/site/Site/Login"
-
-        # Open first link
-        browser.execute_script("window.open('" + mac_domain_counter +"');")
-        # Switch to new tab
-        browser.switch_to.window(browser.window_handles[1])
         # Wait for page to load
-        WebDriverWait(browser, 20).until(EC.visibility_of_element_located((By.XPATH, '/html/body/grafana-app/sidemenu/a/img')))
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '/html/body/grafana-app/sidemenu/a/img')))
 
         # Open second link
         browser.execute_script("window.open('" + cm_states +"');")
-        # Switch to new tab
-        browser.switch_to.window(browser.window_handles[2])
-        # Wait for page to load
-        WebDriverWait(browser, 20).until(EC.visibility_of_element_located((By.XPATH, '/html/body/grafana-app/sidemenu/a/img')))
         
         # Open third link
         browser.execute_script("window.open('" + core_upstreams +"');")
-        # Switch to new tab
-        browser.switch_to.window(browser.window_handles[3])
-        # Wait for page to load
-        WebDriverWait(browser, 20).until(EC.visibility_of_element_located((By.XPATH, '/html/body/grafana-app/sidemenu/a/img')))
 
         # Open fourth link
         browser.execute_script("window.open('" + viewpoint_home +"');")
-        # Switch to new tab
-        browser.switch_to.window(browser.window_handles[4])
 
         # Update progress bar
         progress_bar.UpdateBar(2, 5)
 
         ## Log into Viewpoint
+        # Switch driver to the correct tab
+        browser.switch_to.window(browser.window_handles[1])
+
+        # Wait for page to load
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="siteLoadingLogo"]')))
+
         # Type username
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="username"]'))).send_keys(Viewpoint_username)
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="username"]'))).send_keys(Viewpoint_username)
 
         # Type password
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="password"]'))).send_keys(Viewpoint_password)
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="password"]'))).send_keys(Viewpoint_password)
 
         # Click "login"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="loginButton"]'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="loginButton"]'))).click()
 
         # Click "RPM"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteOrgTreeContent"]/div/ul/ul/li[2]/a[1]'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteOrgTreeContent"]/div/ul/ul/li[2]/a[1]'))).click()
 
         # Click "Buckeye Cable"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteOrgTreeContent"]/div/ul/ul/ul/li[1]/a[1]'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteOrgTreeContent"]/div/ul/ul/ul/li[1]/a[1]'))).click()
 
         #Update progress bar
         progress_bar.UpdateBar(3, 5)
 
         # Click the correct HUB
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Full_HUB))).click()
-
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Full_HUB))).click()
+        
         # Click the correct Node
-        #browser.execute_script("arguments[0].scrollIntoView();", browser.find_elements((By.XPATH, '//*[text()="%s"]' % Viewpoint_Short_HUB_Node)))
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Short_HUB_Node))).click()
-
+        try:
+            WebDriverWait(browser, 3).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Short_HUB_Node)))
+        except Exception:
+            ActionChains(browser).key_down(Keys.PAGE_DOWN).key_up(Keys.PAGE_DOWN).perform()
+        finally:
+            WebDriverWait(browser, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[text()="%s"]' % Viewpoint_Short_HUB_Node))).click()
+        
         # Click "Return Spectrum"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewContent"]/div/ul/li'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewContent"]/div/ul/li'))).click()
 
         # Click "Mode"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[2]/li[2]'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[2]/li[2]'))).click()
         
         # Click "Historical"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[2]/li[2]/select/option[2]'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[2]/li[2]/select/option[2]'))).click()
 
         # Click "Display"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[3]/ul[1]/li[2]/select'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[3]/ul[1]/li[2]/select'))).click()
 
         #Update progress bar
         progress_bar.UpdateBar(4, 5)
 
         # Click "Spectrum"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[3]/ul[1]/li[2]/select/option[1]'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[3]/ul[1]/li[2]/select/option[1]'))).click()
 
         # Click "Time Span"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[3]/ul[1]/li[4]'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[3]/ul[1]/li[4]'))).click()
         
         # Click "15 min"
-        WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[3]/ul[1]/li[4]/select/option[1]'))).click()
+        WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewPanelContent"]/ul[3]/ul[1]/li[4]/select/option[1]'))).click()
 
         # Click "Back button for 15 minute increments"
         i = 0
         while i < Viewpoint_TimeFrame_Count:
-            WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewContent"]/div[2]/ul/li[2]'))).click()
+            WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="siteViewContent"]/div[2]/ul/li[2]'))).click()
             time.sleep(.5)
             i += 1
 
         time.sleep(Viewpoint_TimeFrame_Count)
-
-        # Close First tab
-        browser.switch_to.window(browser.window_handles[0])
-        browser.close()
 
         # Switch to First tab again
         browser.switch_to.window(browser.window_handles[0])
     
         # Update progress bar
         progress_bar.UpdateBar(5, 5)
-
+        
         # Set window back into view
         browser.set_window_position(593,60)
-        
+
         # Open Excel file
-        xw.App(visible=True, add_book=False).books.open("\\\\taz\\cabout$\\Network Surveillance\\Reports On Demand\\RF Impairments\\RF Impairment Watchlist.xlsm")
-    
+        xw.App(visible=True, add_book=False).books.open("\\\\taz\\cabout$\\Network Surveillance\\Reports On Demand\\RF Impairments\\RF Impairment Watchlist.xlsm").sheets[Viewpoint_Full_HUB].activate()
+
         # Close The Window
         window.Close()
     except Exception as e:
-        # Export exception to variable
+        # Set exception as global variable
         global str_exception
-        str_exception = str(e)
-        # Run functions
-        quit_chrome()
+        # Set credentials file location
+        Credentials_File = Root+"\\Backend\\Credentials.txt"
+        # Check if errors are present on the page, otherwise disaplay generic error
+        if browser.find_elements(By.XPATH, '//*[text()="Unable to sign in"]'):
+            # Export exception to variable
+            str_exception = "Error with your username or password! \n\n I've deleted the credentials file. Please restart MaintenanceBoi."
+            # Remove credentials file
+            if os.path.isfile(Credentials_File) and os.access(Credentials_File, os.R_OK):
+                os.remove(Credentials_File)
+            # Run functions
+            quit_chrome()
+            window.Close()
+            error_window()
+        elif browser.find_elements(By.XPATH, '//div[@class="error active"]'):
+            # Export exception to variable
+            str_exception = "Error with your username or password! \n\n I've deleted the credentials file. Please restart MaintenanceBoi."
+            # Remove credentials file
+            if os.path.isfile(Credentials_File) and os.access(Credentials_File, os.R_OK):
+                os.remove(Credentials_File)
+            # Run functions
+            quit_chrome()
+            window.Close()
+            error_window()
+        else:   
+            # Export exception to variable
+            str_exception = str(e)
+            # Run functions
+            quit_chrome()
+            window.Close()
+            error_window()
+
+def node_outage_open():
+    try:
+        # Themes & Colors
+        sg.theme('DarkGrey4')
+        DARK_COLOR = '#1e1e1e'
+        LIGHT_COLOR = '#333333'
+
+        # Images
+        exclamation_img = 'iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QA/wD/AP+gvaeTAAAAB3RJTUUH5AwYBAcUQ86LIwAABpNJREFUWMPFmXtwFVcdxz+/s5s0NzQ0JCFpUtKEIAWxrUAH+rKW2lgCHVu09dGOwFj9w07tH9opHWbEcarFOrXVKlpnmDrO1CrScbTQFnCmwMDUqSNDeZmCEKQIScjr5t7c5D529/z84+bm0YQ0uSt4/rhz9u6ePZ8957u/10pj4zJDtgmg4/UVtKTA8Jcd++3GNU3y/QNttb7qElU+DSwCZgPlQNHguBTQBZxGOCiwzxX5x8mHF7TVfXeLfq7pUybp2/Hmk8HjXN/KIGAOckwTYP3iquDRfecKT8fTCwPVBxWagDlAZNzbjp22Hzgp8JYj8qeFFZGjTy+p9p8/3OEwcVNpbFzmjJhi+Awws8jVRTMjuuHvbdf7qt9S+DxKxYTPrBPsR/badoGtBUZe2nP/3BM/OdRh4plALgboNDTUy4cBFVhRO92+erKnePuZ+CMBugm4G6UYCQUHypUINwfKPb893tOX8O3xxlklftuAL+NRjgFU4Jml1cHX9pytjnnBRoX1QPm4QFOHG9kvV6GpLxNcdaQ7deCx6ysGjvemx0A6DQ31JjdMgY03Vwd3bTtVlwrsJlUeRnAuAVzuvAvc4qnW7m1NvPPtGysTzdHUKEiTu6UC91473X7m9VPV6cC+qMp9k5wkX7iha1V5KBXY5596t3XGooqIHXeLKyOuvvKvnmlxL3hWlYcuF9yI8zd4Vt1z/d6+upLCIGNVcisoIjBn+hXanQrWKKz9P8CBgsKj5xLeFzffeW1uFdUo6DNLa4Ifv3fhRos+CRTkA6eqqLWoWtTqlOEG+xGLrp/1yrG5X72uzALiLJo/R355rKuwJ+3/AFiWD5zjGGZdXUVleTnlpaUUR4roHxhA81vlCqt4nSn/7WLXIFCCu2DebYHqdpSyKa8cSmlJCVte+BE3XPcxRIR3Dx1l9VMb6E+mkHwkILQWiKzMNB84bFatWGKs6pfygctdY4yhsmwGNZUzqZ5ZQWXZjKywyVOfUOOrfkGPPo1584N4ncLyUW5kKi8EIzmyv1Z1tGvK4+VRWBn5yvYqE6jeAtSHcl/Zt2TUHxoCbrDNy1h7k1HlTqAofzghCALSnjd054znYa0ddk/5masS4HYDLA5j5wRIZTJEY/EhwO7eGJkccAhbqspNZmh7Qxhhz/PpivYOAXZFo/h+QN66HlbKHAPMCOUhAGsDOnuiQ8edPb1ZTUpILwQVBnBDuy+rdEajMOhNOnp6soDhXWSRO3E2MnmRd3RHCazFWju83WHgdDjc8kM7fqAr2osfBGQ+pMcw0gFSBoiGjkoEumMxMhmPdCZDNN4HIuEjH+hygTMIM0OFTAjRWJxYIkHG84j1JbKA4aXT4gIHUZaEiueM4cz5Nlav24BVpbWjI+uLw8eMB10R9imsvag3+Sg4BddxWHP/vcybXQcCdTXVvLp9BzrS1Ewdrk+Q/a4j8jdf9QzK/LwiYcAxhlWNy2i64zYA/vjWX/n9GzuzgPlKB04UGnnPLK8tOSuwK98wfdxsW3VseWKKuyPwZvLYjnb3jV3NtmBB7VZfdfW4MeEk7JWq0tzyb8pLrwLg5AdnhyHz03WrK/JnkQrkgZV3myPdyYKWePpXCo9MMYcY6hcXFeE62VKL5/sk0+mJzMeEJkiEn95aNW3d9EJHTW8mkCNfnp9xRTYBZ/OBQ6E/mSKW6CeW6CeZyh8O4f0CIy+tmVdmPasYAb1vx2ln3aKqw4I8h+DlI+yc2ZMwQaqQNMiz+1fNPfVaS68ZlbinrXJhwPtn0rdXA4sve26cfcBNtVcW/qIllrajEneAjqQvTy6sHChyzPdE2H65E3eBP0wrcDY+0FCajnt2aJQZdlaw8z99Zstn6y8UGvO4CNsuOdzw4ZaIY5547taansPdSTPCxIoZnV3Ai0c7zesrZp+NOOabApsRvEsGJyQFfjbNdR5/4fZrLrzW0msmLL/lxr/T3m++8fHyxOGu5O6kb9sUPoFQ+j+GO2GQ9ddMK/z52vllibfPJ4xMtsIqwKl4RhaURby188sP7D2f2K3gINQhFIfUXLsIvyk08sS2FQ2725O+PdOXMRerAY9ZwZGQSd9KSywtW++pb9/b2r8rlg72KMQQpiOUoBRMEq4faBbhZVdkw8KK4t/9cGlN16+bu5x0oCITVNGlsXGZTFTlz01X7Bq27TwUPPbgUrP5/a5ZvtWlCnegLAbqP+ozRKGRA7Gvf7L1iu+8rCuX3+VkAh0zx3j9/wLEpyK1Roah2wAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMC0xMi0yNFQwNDowNzoxMSswMDowMFX6/cAAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjAtMTItMjRUMDQ6MDc6MTErMDA6MDAkp0V8AAAAAElFTkSuQmCC'
+        
+        # Header block
+        top_banner = [[sg.Image(data=exclamation_img, background_color=DARK_COLOR), sg.Text('Loading...', font=('Calibri', 20), background_color=DARK_COLOR)]]
+
+        # Main block
+        body = [
+                    [sg.Text('Please be patient while I grab the requested data.', font=('Calibri', 13), background_color=LIGHT_COLOR)]
+                ]
+
+        # Define Layout
+        layout = [
+                    [sg.Column(top_banner, size=(550, 60), background_color=DARK_COLOR)],
+                    [sg.Column([[sg.Column(body, size=(550,150), background_color=LIGHT_COLOR)]], background_color=DARK_COLOR)],
+                    [sg.ProgressBar(1, orientation='h', size=(49, 10), pad=(15,15), key='progress')]
+                ]
+
+        # Create window
+        window = sg.Window('MaintenanceBoi - Loading', layout, background_color=DARK_COLOR, keep_on_top=True, no_titlebar=True, grab_anywhere=True).Finalize()
+        progress_bar = window.FindElement('progress')
+    
+        # Update progress bar
+        progress_bar.UpdateBar(0, 5)
+        
+        # Set gloval var
+        global browser
+
+        # Set link vars
+        mac_domain_counter = "https://buckeye.cableos-operations.com/d/core-mac-domain-counters/core-mac-domain-counters?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-mdName=Md"+mac_domain_Split_First_Number_String+":"+mac_domain_Split_Second_Number_String+"%2F"+mac_domain_Split_Third_Number_String+".0"
+        cm_states = "https://buckeye.cableos-operations.com/d/core-cm-states-per-mac-domain/core-cm-states-per-mac-domain?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-mdName=Md"+mac_domain_Split_First_Number_String+":"+mac_domain_Split_Second_Number_String+"%2F"+mac_domain_Split_Third_Number_String+".0"
+        power_map = "http://outages.firstenergycorp.com/oh.html"
+        
+        # Open first link
+        browser.get((mac_domain_counter))
+
+        ## Log into Grafana
+        # Type username
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-username"]'))).send_keys(Grafana_username)
+
+        # Type password
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-password"]'))).send_keys(Grafana_password)
+        time.sleep(.5)
+
+        # Click login
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-submit"]'))).click()
+
+        # Update progress bar
+        progress_bar.UpdateBar(1, 5)
+
+        # Wait for page to load
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '/html/body/grafana-app/sidemenu/a/img')))
+
+        # Open second link
+        browser.execute_script("window.open('" + cm_states +"');")
+
+        # Update progress bar
+        progress_bar.UpdateBar(2, 5)
+
+        # Open third link
+        browser.execute_script("window.open('" + power_map +"');")
+
+        # Switch to First tab again
+        browser.switch_to.window(browser.window_handles[0])
+    
+        # Update progress bar
+        progress_bar.UpdateBar(5, 5)
+        
+        # Set window back into view
+        browser.set_window_position(593,60)
+
+        # Close The Window
         window.Close()
-        error_window()
+    except Exception as e:
+        # Set exception as global variable
+        global str_exception
+        # Set credentials file location
+        Credentials_File = Root+"\\Backend\\Credentials.txt"
+        # Check if errors are present on the page, otherwise disaplay generic error
+        if browser.find_elements(By.XPATH, '//*[text()="Unable to sign in"]'):
+            # Export exception to variable
+            str_exception = "Error with your username or password! \n\n I've deleted the credentials file. Please restart MaintenanceBoi."
+            # Remove credentials file
+            if os.path.isfile(Credentials_File) and os.access(Credentials_File, os.R_OK):
+                os.remove(Credentials_File)
+            # Run functions
+            quit_chrome()
+            window.Close()
+            error_window()
+        else:   
+            # Export exception to variable
+            str_exception = str(e)
+            # Run functions
+            quit_chrome()
+            window.Close()
+            error_window()
+
+def hub_outage_open():
+    try:
+        # Themes & Colors
+        sg.theme('DarkGrey4')
+        DARK_COLOR = '#1e1e1e'
+        LIGHT_COLOR = '#333333'
+
+        # Images
+        exclamation_img = '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'
+        
+        # Header block
+        top_banner = [[sg.Image(data=exclamation_img, background_color=DARK_COLOR), sg.Text('Loading...', font=('Calibri', 20), background_color=DARK_COLOR)]]
+
+        # Main block
+        body = [
+                    [sg.Text('Please be patient while I grab the requested data.', font=('Calibri', 13), background_color=LIGHT_COLOR)]
+                ]
+
+        # Define Layout
+        layout = [
+                    [sg.Column(top_banner, size=(550, 60), background_color=DARK_COLOR)],
+                    [sg.Column([[sg.Column(body, size=(550,150), background_color=LIGHT_COLOR)]], background_color=DARK_COLOR)],
+                    [sg.ProgressBar(1, orientation='h', size=(49, 10), pad=(15,15), key='progress')]
+                ]
+
+        # Create window
+        window = sg.Window('MaintenanceBoi - Loading', layout, background_color=DARK_COLOR, keep_on_top=True, no_titlebar=True, grab_anywhere=True).Finalize()
+        progress_bar = window.FindElement('progress')
+    
+        # Update progress bar
+        progress_bar.UpdateBar(0, 5)
+        
+        # Set gloval var
+        global browser
+
+        # Set link vars
+        mac_domain_counter = "https://buckeye.cableos-operations.com/d/core-mac-domain-counters/core-mac-domain-counters?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-mdName=Md"+mac_domain_Split_First_Number_String+":"+mac_domain_Split_Second_Number_String+"%2F"+mac_domain_Split_Third_Number_String+".0"
+        cm_states = "https://buckeye.cableos-operations.com/d/core-cm-states-per-mac-domain/core-cm-states-per-mac-domain?orgId=1&from=now-24h&to=now&var-ds_zabbix=default&var-ds_postgres=ZabbixDirect&var-group=buckeye&var-setup="+Cluster+"&var-mdName=Md"+mac_domain_Split_First_Number_String+":"+mac_domain_Split_Second_Number_String+"%2F"+mac_domain_Split_Third_Number_String+".0"
+        # Open first link
+        browser.get((mac_domain_counter))
+
+        ## Log into Grafana
+        # Type username
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-username"]'))).send_keys(Grafana_username)
+
+        # Type password
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-password"]'))).send_keys(Grafana_password)
+        time.sleep(.5)
+
+        # Click login
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="okta-signin-submit"]'))).click()
+
+        # Update progress bar
+        progress_bar.UpdateBar(1, 5)
+
+        # Wait for page to load
+        WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.XPATH, '/html/body/grafana-app/sidemenu/a/img')))
+
+        # Open second link
+        browser.execute_script("window.open('" + cm_states +"');")
+
+        # Update progress bar
+        progress_bar.UpdateBar(2, 5)
+
+        # Switch to First tab again
+        browser.switch_to.window(browser.window_handles[0])
+    
+        # Update progress bar
+        progress_bar.UpdateBar(5, 5)
+        
+        # Set window back into view
+        browser.set_window_position(593,60)
+
+        # Close The Window
+        window.Close()
+    except Exception as e:
+        # Set exception as global variable
+        global str_exception
+        # Set credentials file location
+        Credentials_File = Root+"\\Backend\\Credentials.txt"
+        # Check if errors are present on the page, otherwise disaplay generic error
+        if browser.find_elements(By.XPATH, '//*[text()="Unable to sign in"]'):
+            # Export exception to variable
+            str_exception = "Error with your username or password! \n\n I've deleted the credentials file. Please restart MaintenanceBoi."
+            # Remove credentials file
+            if os.path.isfile(Credentials_File) and os.access(Credentials_File, os.R_OK):
+                os.remove(Credentials_File)
+            # Run functions
+            quit_chrome()
+            window.Close()
+            error_window()
+        else:   
+            # Export exception to variable
+            str_exception = str(e)
+            # Run functions
+            quit_chrome()
+            window.Close()
+            error_window()
 
 ### Execute functions defined above
 ## Prep functions
@@ -1603,6 +1890,14 @@ obtain_passwords()
 version_check()
 ## Analyze functions
 main_window()
-user_input_conversion()
-grab_data()
+user_input_conversion()                
+if event_type == "maintenance":
+    print("Working Maintenance Ticket")
+    determine_maintenance()
+if event_type == "node_outage":
+    print("Working Node Outage")
+    node_outage_open()
+if event_type == "hub_outage":
+    print("Working HUB Outage")
+    hub_outage_open()
 completion_window()
